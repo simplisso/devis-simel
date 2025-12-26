@@ -1,0 +1,99 @@
+/* --- DESIGN SYSTEM SIMEL S.E.S --- */
+:root {
+    --primary: #1A202C;    /* Gris Anthracite */
+    --accent: #E53E3E;     /* Rouge SIMEL */
+    --blue: #3182CE;       /* Bleu Technique */
+    --light-bg: #F7FAFC;
+    --white: #ffffff;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --border: #E2E8F0;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--light-bg);
+    color: var(--primary);
+}
+
+/* Header */
+.header-simel {
+    background: var(--primary);
+    color: var(--white);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.header-simel .logo { font-size: 1.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+.header-simel .logo span { color: var(--accent); }
+
+/* Conteneur */
+.main-container {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 20px;
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Cartes */
+.card-pro {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 35px;
+    box-shadow: var(--shadow);
+    border-top: 5px solid var(--accent);
+}
+
+h1 { margin-bottom: 25px; font-size: 1.6rem; text-align: center; color: var(--primary); }
+
+/* Formulaires */
+.form-group { margin-bottom: 20px; }
+label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; color: #4A5568; }
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+input:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1); }
+
+/* Boutons */
+.btn-simel {
+    background-color: var(--accent);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: 0.3s;
+    font-size: 1rem;
+}
+.btn-simel:hover { background-color: #C53030; transform: translateY(-2px); }
+
+/* Box Spéciale */
+.highlight-box {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px dashed var(--blue);
+    margin: 20px 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

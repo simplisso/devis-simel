@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>ÉlecProDevis – Debug & Données</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0077cc">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ÉlecProDevis">
+  <link rel="apple-touch-icon" href="images/icon-192.png">
+  <style>
+    body {
+      margin: 0;
+      padding: 30px;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #0077cc;
+      margin-bottom: 30px;
+    }
+    .bloc {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+    pre {
+      background: #eee;
+      padding: 20px;
+      border-radius: 12px;
+      overflow-x: auto;
+      font-size: 0.9em;
+    }
+    .actions {
+      margin-top: 30px;
+      text-align: center;
+    }
+    .actions button {
+      margin: 10px;
+      padding: 12px 20px;
+      font-size: 1em;
+      background-color: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .actions button:hover {
+      background-color: #005fa3;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 Debug & Données locales</h1>
+  <div class="bloc">
+    <p><strong>Données enregistrées :</strong></p>
+    <pre id="donnees"></pre>
+
+    <div class="actions">
+      <button onclick="exporterJSON()">📤 Exporter JSON</button>
+      <button onclick="resetDonnees()">🗑️ Réinitialiser</button>
+      <button onclick="location.reload()">🔄 Recharger</button>
+    </div>
+  </div>
+
+  <script>
+    function afficherDonnees() {
+      const data = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        data[key] = localStorage.getItem(key);
+      }
+      document.getElementById("donnees").textContent = JSON.stringify(data, null, 2);
+    }
+
+    function exporterJSON() {
+      const data = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        data[key] = localStorage.getItem(key);
+      }
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "debug-elecprodevis.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function resetDonnees() {
+      if (confirm("🛑 Confirmer la suppression de toutes les données locales ?")) {
+        localStorage.clear();
+        alert("✅ Données réinitialisées.");
+        location.reload();
+      }
+    }
+
+    afficherDonnees();
+  </script>
+</body>
+</html>

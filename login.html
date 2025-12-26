@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMEL S.E.S | Portail Sécurisé</title>
+    <link rel="stylesheet" href="style-pro.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .login-card {
+            background: white;
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .brand-logo {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .brand-logo span { color: #e53e3e; } /* Couleur Accent SIMEL */
+
+        .subtitle {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #edf2f7;
+            margin-bottom: 25px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #a0aec0;
+            transition: 0.3s;
+        }
+
+        .tab.active {
+            color: #3182ce;
+            border-bottom: 3px solid #3182ce;
+            margin-bottom: -2px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #edf2f7;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            border-color: #3182ce;
+            outline: none;
+        }
+
+        .btn-auth {
+            width: 100%;
+            background: #2d3748;
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-auth:hover { background: #1a202c; }
+
+        .error-box {
+            background: #fff5f5;
+            color: #c53030;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .loading-spinner {
+            display: none;
+            margin-top: 10px;
+            color: #3182ce;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="brand-logo">SIMEL <span>S.E.S</span></div>
+        <div class="subtitle">Gestion Professionnelle de Devis</div>
+
+        <div class="tabs">
+            <div id="tab-login" class="tab active" onclick="switchTab('login')">Connexion</div>
+            <div id="tab-signup" class="tab" onclick="switchTab('signup')">Inscription</div>
+        </div>
+
+        <div id="auth-form">
+            <div class="form-group">
+                <label><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" id="email" placeholder="votre@email.com">
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-lock"></i> Mot de passe</label>
+                <input type="password" id="password" placeholder="••••••••">
+            </div>
+
+            <button id="btn-action" onclick="handleAuth()" class="btn-auth">
+                Se connecter
+            </button>
+            
+            <div id="loader" class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i> Traitement en cours...
+            </div>
+
+            <div id="error-msg" class="error-box"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // CONFIGURATION SUPABASE DIRECTE
+        const SUPABASE_URL = 'https://mvtqrvbdhvdaxlfhgyqq.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12dHFydmJkaHZkYXhsZmhneXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NzMwNDAsImV4cCI6MjA4MjM0OTA0MH0.LJRT3MJpGmlZHyZ0Zdn3HliE3RsWu6XlgrYsBOyLbM8';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentMode = 'login';
+
+        function switchTab(mode) {
+            currentMode = mode;
+            document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+            document.getElementById('tab-signup').classList.toggle('active', mode === 'signup');
+            document.getElementById('btn-action').innerText = mode === 'login' ? 'Se connecter' : 'Créer un compte';
+            document.getElementById('error-msg').style.display = 'none';
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('btn-action');
+            const loader = document.getElementById('loader');
+            const errorBox = document.getElementById('error-msg');
+
+            if(!email || !password) {
+                showError("Veuillez remplir tous les champs.");
+                return;
+            }
+
+            // Interface UI
+            btn.style.display = 'none';
+            loader.style.display = 'block';
+            errorBox.style.display = 'none';
+
+            try {
+                if (currentMode === 'login') {
+                    // CONNEXION
+                    const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+                    if (error) throw error;
+                    
+                    // Succès : Redirection
+                    window.location.href = "accueil.html";
+                } else {
+                    // INSCRIPTION
+                    const { data, error } = await _supabase.auth.signUp({ email, password });
+                    if (error) throw error;
+                    
+                    alert("Inscription réussie ! Un email de confirmation vous a été envoyé (si activé) ou vous pouvez maintenant vous connecter.");
+                    switchTab('login');
+                }
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                btn.style.display = 'block';
+                loader.style.display = 'none';
+            }
+        }
+
+        function showError(text) {
+            const errorBox = document.getElementById('error-msg');
+            errorBox.innerText = text;
+            errorBox.style.display = 'block';
+        }
+
+        // Vérification si déjà connecté
+        async function checkSession() {
+            const { data } = await _supabase.auth.getSession();
+            if (data.session) {
+                window.location.href = "accueil.html";
+            }
+        }
+        checkSession();
+    </script>
+</body>
+</html>

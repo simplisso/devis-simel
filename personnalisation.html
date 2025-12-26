@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>ÉlecProDevis – Personnalisation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0077cc">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ÉlecProDevis">
+  <link rel="apple-touch-icon" href="images/icon-192.png">
+  <style>
+    body {
+      margin: 0;
+      padding: 30px;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #0077cc;
+      margin-bottom: 30px;
+    }
+    .bloc {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    input[type="file"],
+    select,
+    input[type="color"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+    .preview {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .preview img {
+      max-width: 150px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    button {
+      margin-top: 30px;
+      width: 100%;
+      padding: 14px;
+      background-color: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005fa3;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 Personnalisation visuelle</h1>
+  <div class="bloc">
+    <label for="logo">Logo personnalisé :</label>
+    <input type="file" id="logo" accept="image/*" onchange="previewLogo(event)">
+
+    <label for="theme">Choix du thème :</label>
+    <select id="theme">
+      <option value="bleu">Bleu professionnel</option>
+      <option value="vert">Vert technique</option>
+      <option value="noir">Noir élégant</option>
+      <option value="orange">Orange dynamique</option>
+    </select>
+
+    <label for="fond">Couleur de fond :</label>
+    <input type="color" id="fond" value="#f0f4f8">
+
+    <label for="animation">Animation d’entrée :</label>
+    <select id="animation">
+      <option value="fade">Fondu</option>
+      <option value="slide">Glissement</option>
+      <option value="zoom">Zoom</option>
+      <option value="none">Aucune</option>
+    </select>
+
+    <div class="preview" id="logoPreview"></div>
+
+    <button onclick="validerPersonnalisation()">✅ Appliquer</button>
+  </div>
+
+  <script>
+    function previewLogo(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById("logoPreview").innerHTML = `<img src="${e.target.result}" alt="Logo">`;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function validerPersonnalisation() {
+      const theme = document.getElementById("theme").value;
+      const fond = document.getElementById("fond").value;
+      const animation = document.getElementById("animation").value;
+
+      localStorage.setItem("theme", theme);
+      localStorage.setItem("fond", fond);
+      localStorage.setItem("animation", animation);
+
+      alert("✅ Personnalisation enregistrée !");
+    }
+  </script>
+</body>
+</html>

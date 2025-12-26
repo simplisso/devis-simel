@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMEL S.E.S | Accueil Devis</title>
+    <link rel="stylesheet" href="style-pro.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .logo-preview {
+            width: 100px; height: 100px;
+            border: 2px dashed #cbd5e0;
+            margin-top: 10px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; overflow: hidden; background: #fff;
+        }
+        .logo-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .btn-upload {
+            background: #4A5568; color: white; padding: 8px 12px;
+            border-radius: 5px; cursor: pointer; font-size: 0.8rem; display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header-simel">
+        <div class="logo">SIMEL <span>S.E.S</span></div>
+        <div style="font-size: 0.8rem; opacity: 0.8;">LOGICIEL DEVIS PRO</div>
+    </header>
+
+    <main class="main-container">
+        <div class="card-pro">
+            <h1><i class="fas fa-file-invoice"></i> Nouveau Projet</h1>
+            
+            <div class="highlight-box" style="border-color: var(--accent); background: #fff5f5;">
+                <label style="color: var(--accent); font-weight: bold; margin-bottom: 10px; display: block;">
+                    <i class="fas fa-building"></i> IDENTITÉ DE L'ENTREPRISE
+                </label>
+                
+                <div class="form-group">
+                    <label>Nom de l'entreprise</label>
+                    <input type="text" id="ent-nom" placeholder="Par défaut : SIMEL S.E.S">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label>Contact (Tél/Email)</label>
+                        <input type="text" id="ent-contact" placeholder="+229 01XXXXXXXX">
+                    </div>
+                    <div>
+                        <label>Adresse / Ville</label>
+                        <input type="text" id="ent-adresse" placeholder="Cotonou, Bénin">
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <label>Logo de l'entreprise (Optionnel)</label><br>
+                    <input type="file" id="ent-logo-input" accept="image/*" style="display: none;" onchange="handleLogo(this)">
+                    <label for="ent-logo-input" class="btn-upload"><i class="fas fa-image"></i> Choisir un logo</label>
+                    <div class="logo-preview" id="logo-preview-box">
+                        <span style="color: #ccc; font-size: 0.7rem;">Aucun logo</span>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
+
+            <div class="form-group">
+                <label><i class="fas fa-user"></i> Nom du Client</label>
+                <input type="text" id="client" placeholder="Ex: Jean Kouassi">
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-user-tie"></i> Responsable de l'étude</label>
+                <input type="text" id="electricien" placeholder="Ex: Simplice OLOUBI">
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-calendar-alt"></i> Date</label>
+                <input type="date" id="date">
+            </div>
+
+            <div class="highlight-box">
+                <label><i class="fas fa-tools"></i> Main-d'œuvre</label>
+                <select id="modeMain" onchange="toggleMain()" style="margin-bottom: 10px;">
+                    <option value="auto">Automatique (Tarif Horaire)</option>
+                    <option value="manuelle">Forfait fixe (Montant global)</option>
+                </select>
+
+                <div id="sectionAuto" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <input type="number" id="heures" placeholder="Heures" value="1">
+                    <input type="number" id="tarifHoraire" placeholder="Tarif/H" value="5000">
+                </div>
+
+                <div id="sectionManuelle" style="display:none;">
+                    <input type="number" id="mainManuelle" placeholder="Montant Forfaitaire TTC">
+                </div>
+            </div>
+
+            <button onclick="validerEtape1()" class="btn-simel">
+                Suivant : Sélectionner Produits <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </main>
+
+    <script>
+        let base64Logo = "";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('date').valueAsDate = new Date();
+            
+            // Charger les infos si elles existent déjà
+            if(localStorage.getItem("ent_nom")) document.getElementById("ent-nom").value = localStorage.getItem("ent_nom");
+            if(localStorage.getItem("ent_contact")) document.getElementById("ent-contact").value = localStorage.getItem("ent_contact");
+            if(localStorage.getItem("ent_adresse")) document.getElementById("ent-adresse").value = localStorage.getItem("ent_adresse");
+            
+            // Charger le logo existant
+            const savedLogo = localStorage.getItem("ent_logo");
+            if(savedLogo) {
+                base64Logo = savedLogo;
+                document.getElementById("logo-preview-box").innerHTML = `<img src="${savedLogo}">`;
+            }
+        });
+
+        function handleLogo(input) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                base64Logo = e.target.result;
+                document.getElementById("logo-preview-box").innerHTML = `<img src="${base64Logo}">`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function toggleMain() {
+            const mode = document.getElementById("modeMain").value;
+            document.getElementById("sectionAuto").style.display = mode === "auto" ? "grid" : "none";
+            document.getElementById("sectionManuelle").style.display = mode === "manuelle" ? "block" : "none";
+        }
+
+        function validerEtape1() {
+            const client = document.getElementById("client").value.trim();
+            if (!client) return alert("Veuillez saisir le nom du client.");
+
+            // GESTION DES VALEURS PAR DÉFAUT SI VIDE
+            const entNom = document.getElementById("ent-nom").value.trim() || "SIMEL S.E.S";
+            const entContact = document.getElementById("ent-contact").value.trim() || "+229 XX XX XX XX";
+            const entAdresse = document.getElementById("ent-adresse").value.trim() || "Cotonou, Bénin";
+
+            localStorage.setItem("ent_nom", entNom);
+            localStorage.setItem("ent_contact", entContact);
+            localStorage.setItem("ent_adresse", entAdresse);
+            localStorage.setItem("ent_logo", base64Logo); // Sauvegarde le logo
+
+            localStorage.setItem("client", client);
+            localStorage.setItem("electricien", document.getElementById("electricien").value || "Simplice OLOUBI");
+            localStorage.setItem("date", document.getElementById("date").value);
+            localStorage.setItem("modeMain", document.getElementById("modeMain").value);
+            localStorage.setItem("heures", document.getElementById("heures").value);
+            localStorage.setItem("tarifHoraire", document.getElementById("tarifHoraire").value);
+            localStorage.setItem("mainManuelle", document.getElementById("mainManuelle").value);
+
+            window.location.href = "produits.html";
+        }
+    </script>
+</body>
+</html>
