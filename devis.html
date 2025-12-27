@@ -4,12 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIMEL S.E.S | Devis Professionnel</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.fedapay.com/checkout.js?v=1.1.7"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
-        :root { --primary: #2d3748; --accent: #e53e3e; --blue: #3182ce; }
+        :root { --primary: #2d3748; --accent: #e53e3e; --blue: #3182ce; --green: #2f855a; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7f6; margin: 0; }
 
         .toolbar {
@@ -20,11 +24,17 @@
 
         .btn-group { display: flex; gap: 10px; }
         .btn-auth { background: transparent; border: 1px solid white; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 13px; }
-        .btn-dl { background: var(--blue); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        
+        /* Styles des boutons de téléchargement */
+        .btn-dl-pdf { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-dl-excel { background: var(--green); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
 
+        .page-container { padding: 20px; }
+        
+        /* La page A4 réelle */
         .page {
             background: white; width: 210mm; min-height: 297mm;
-            margin: 20px auto; padding: 20mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); box-sizing: border-box;
+            margin: 0 auto; padding: 20mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); box-sizing: border-box;
         }
 
         .header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
@@ -58,50 +68,53 @@
         <div style="font-weight: bold;">⚡ SIMEL S.E.S</div>
         <div class="btn-group">
             <a href="login.html" id="auth-link" class="btn-auth"><i class="fas fa-user-shield"></i> Connexion Admin</a>
-            <button id="btn-action" class="btn-dl"><i class="fas fa-file-pdf"></i> TÉLÉCHARGER</button>
+            <button onclick="validerEtTelecharger('pdf')" class="btn-dl-pdf"><i class="fas fa-file-pdf"></i> PDF</button>
+            <button onclick="validerEtTelecharger('excel')" class="btn-dl-excel"><i class="fas fa-file-excel"></i> EXCEL</button>
         </div>
     </div>
 
-    <div class="page">
-        <div class="header">
-            <div>
-                <h1 id="ent-nom-view">SIMEL S.E.S</h1>
-                <p id="ent-details-view" style="font-size:12px; color:#666;"></p>
+    <div class="page-container" id="capture-area">
+        <div class="page">
+            <div class="header">
+                <div>
+                    <h1 id="ent-nom-view">SIMEL S.E.S</h1>
+                    <p id="ent-details-view" style="font-size:12px; color:#666;"></p>
+                </div>
+                <div class="devis-title">
+                    <h2>DEVIS</h2>
+                    <p id="date-view" style="font-weight:bold; margin:0;"></p>
+                </div>
             </div>
-            <div class="devis-title">
-                <h2>DEVIS</h2>
-                <p id="date-view" style="font-weight:bold; margin:0;"></p>
-            </div>
-        </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:30px;">
-            <div style="background:#f8fafc; padding:15px; border-radius:8px;">
-                <small>CLIENT :</small><br><strong id="client-view"></strong>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:30px;">
+                <div style="background:#f8fafc; padding:15px; border-radius:8px;">
+                    <small>CLIENT :</small><br><strong id="client-view"></strong>
+                </div>
+                <div style="background:#f8fafc; padding:15px; border-radius:8px;">
+                    <small>EXPERT :</small><br><strong id="expert-view">SIMPLICE OLOUBI</strong>
+                </div>
             </div>
-            <div style="background:#f8fafc; padding:15px; border-radius:8px;">
-                <small>EXPERT :</small><br><strong id="expert-view">SIMPLICE OLOUBI</strong>
-            </div>
-        </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>DESCRIPTION</th>
-                    <th style="text-align:center">QTÉ</th>
-                    <th style="text-align:right">TOTAL (FCFA)</th>
-                </tr>
-            </thead>
-            <tbody id="table-body"></tbody>
-        </table>
+            <table id="table-devis">
+                <thead>
+                    <tr>
+                        <th>DESCRIPTION</th>
+                        <th style="text-align:center">QTÉ</th>
+                        <th style="text-align:right">TOTAL (FCFA)</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+            </table>
 
-        <div class="totals-container">
-            <div class="total-box">
-                <div class="total-row"><span>Total Matériel</span><span id="res-matos">0 F</span></div>
-                <div class="total-row"><span>Main d'œuvre</span><span id="res-main">0 F</span></div>
-                <div class="total-row"><span>TVA (18%)</span><span id="res-tva">0 F</span></div>
-                <div class="net-a-payer">
-                    <span>NET À PAYER :</span>
-                    <span id="res-ttc">0 FCFA</span>
+            <div class="totals-container">
+                <div class="total-box">
+                    <div class="total-row"><span>Total Matériel</span><span id="res-matos">0 F</span></div>
+                    <div class="total-row"><span>Main d'œuvre</span><span id="res-main">0 F</span></div>
+                    <div class="total-row"><span>TVA (18%)</span><span id="res-tva">0 F</span></div>
+                    <div class="net-a-payer">
+                        <span>NET À PAYER :</span>
+                        <span id="res-ttc">0 FCFA</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -117,39 +130,56 @@
             if (session) {
                 const { data: profile } = await _supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
                 if (profile && profile.is_admin) {
-                    const btnDl = document.getElementById('btn-action');
-                    const authBtn = document.getElementById('auth-link');
-                    btnDl.innerHTML = '<i class="fas fa-check-circle"></i> TÉLÉCHARGER (ADMIN)';
-                    btnDl.style.background = "#48bb78";
-                    authBtn.innerHTML = "✅ ADMIN CONNECTÉ";
-                    authBtn.style.borderColor = "#48bb78";
+                    document.getElementById('auth-link').innerHTML = "✅ ADMIN CONNECTÉ";
+                    document.getElementById('auth-link').style.borderColor = "#48bb78";
+                    return true;
                 }
+            }
+            return false;
+        }
+
+        async function validerEtTelecharger(format) {
+            const isAdmin = await checkAdminStatus();
+            
+            if (isAdmin) {
+                // Si admin, on lance directement le format choisi
+                format === 'pdf' ? genererPDF() : genererExcel();
+            } else {
+                // Si pas admin, FedaPay d'abord
+                FedaCheckout.init({
+                    public_key: 'pk_live_votre_cle_ici',
+                    transaction: { amount: 500, description: 'Téléchargement Devis SIMEL' },
+                    onComplete: function(res) {
+                        if (res.status === 'approved') {
+                            format === 'pdf' ? genererPDF() : genererExcel();
+                        }
+                    }
+                });
+                FedaCheckout.open();
             }
         }
 
-        async function executerTelechargement() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            
-            if (session) {
-                const { data: profile } = await _supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
-                if (profile && profile.is_admin) { 
-                    window.print(); 
-                    return; 
-                }
-            }
+        function genererPDF() {
+            const element = document.getElementById('capture-area');
+            const opt = {
+                margin: 0,
+                filename: 'Devis_SIMEL_' + document.getElementById('client-view').innerText + '.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
 
-            FedaCheckout.init({
-                public_key: 'pk_live_votre_cle_ici', // Mets ta clé live ici plus tard
-                transaction: { amount: 500, description: 'Devis SIMEL S.E.S' },
-                onComplete: function(res) { if (res.status === 'approved') window.print(); }
-            });
-            FedaCheckout.open();
+        function genererExcel() {
+            const table = document.getElementById('table-devis');
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Devis" });
+            XLSX.writeFile(wb, 'Devis_SIMEL_' + document.getElementById('client-view').innerText + '.xlsx');
         }
 
         function chargerDonnees() {
             document.getElementById('date-view').innerText = new Date().toLocaleDateString('fr-FR');
-            document.getElementById('client-view').innerText = localStorage.getItem("client") || "Non spécifié";
-            document.getElementById('expert-view').innerText = localStorage.getItem("electricien") || "SIMPLICE OLOUBI";
+            document.getElementById('client-view').innerText = localStorage.getItem("client") || "CLIENT";
             
             const produits = JSON.parse(localStorage.getItem("devis_final_produits") || "[]");
             let totalMatos = 0;
@@ -177,8 +207,6 @@
             document.getElementById('res-ttc').innerText = ttc.toLocaleString() + " FCFA";
         }
 
-        document.getElementById('btn-action').onclick = executerTelechargement;
-        
         window.onload = async () => { 
             await checkAdminStatus(); 
             chargerDonnees(); 
