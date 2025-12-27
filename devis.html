@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SIMEL S.E.S | Devis Professionnel</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,76 +14,99 @@
 
     <style>
         :root { --primary: #2d3748; --accent: #e53e3e; --blue: #3182ce; --green: #2f855a; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 0; }
 
         /* Barre d'outils */
         .toolbar {
             background: #1a202c; padding: 10px 20px; color: white;
             display: flex; justify-content: space-between; align-items: center;
             position: sticky; top: 0; z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
-        .btn-group { display: flex; gap: 10px; }
-        .btn-auth { background: transparent; border: 1px solid white; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 13px; }
-        .btn-pdf { background: var(--accent); color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-excel { background: var(--green); color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-group { display: flex; gap: 8px; }
+        .btn-auth { background: transparent; border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 12px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 12px; }
+        .btn-pdf { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .btn-excel { background: var(--green); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 13px; }
 
-        /* Conteneur A4 */
-        .page-container { padding: 40px 20px; display: flex; justify-content: center; }
+        /* ZONE DE CAPTURE PDF OPTIMISÉE */
+        .page-container { 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center;
+            overflow-x: auto; /* Permet de voir tout le devis sur petit écran sans le casser */
+        }
         
-        /* La zone capturée par le PDF */
         #capture-area {
-            background: white;
-            width: 210mm;
+            background: white; 
+            width: 210mm; /* Largeur A4 stricte */
             min-height: 297mm;
-            padding: 15mm; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 15mm; /* Marges internes égales partout */
             box-sizing: border-box;
+            position: relative; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            margin: 0 auto;
         }
 
         /* En-tête */
-        .header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 20px; margin-bottom: 25px; align-items: flex-start; }
-        .company-header { display: flex; align-items: center; gap: 20px; }
-        #logo-view { max-width: 120px; max-height: 90px; object-fit: contain; }
-        .company-info h1 { margin: 0; color: var(--primary); font-size: 24px; text-transform: uppercase; }
-        .company-info p { margin: 5px 0 0 0; font-size: 12px; color: #666; white-space: pre-line; line-height: 1.4; }
+        .header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-bottom: 25px; align-items: flex-start; }
+        .company-header { display: flex; align-items: center; gap: 15px; }
+        #logo-view { max-width: 100px; max-height: 80px; object-fit: contain; border-radius: 5px; }
+        .company-info h1 { margin: 0; color: var(--primary); font-size: 20px; text-transform: uppercase; }
+        .company-info p { margin: 3px 0; font-size: 11px; color: #4a5568; line-height: 1.3; }
         
         .devis-title { text-align: right; }
-        .devis-title h2 { margin: 0; color: var(--accent); font-size: 30px; letter-spacing: 2px; }
+        .devis-title h2 { margin: 0; color: var(--accent); font-size: 28px; letter-spacing: 1px; }
 
-        /* Grille Infos */
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-        .info-card { background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid; }
-        .info-card.client { border-left-color: var(--blue); }
-        .info-card.expert { border-left-color: var(--primary); }
+        /* Client & Expert */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .info-card { background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid #cbd5e0; }
+        .info-card.blue { border-left-color: var(--blue); }
+        .info-card.dark { border-left-color: var(--primary); }
+        .info-card small { color: #718096; text-transform: uppercase; font-size: 10px; font-weight: bold; }
+        .info-card strong { display: block; font-size: 14px; margin-top: 4px; color: #2d3748; }
 
         /* Tableau */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: var(--primary); color: white; padding: 12px; text-align: left; font-size: 13px; text-transform: uppercase; }
-        td { padding: 12px; border-bottom: 1px solid #edf2f7; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+        th { background: var(--primary); color: white; padding: 10px; text-align: left; font-size: 12px; text-transform: uppercase; }
+        td { padding: 10px; border-bottom: 1px solid #edf2f7; font-size: 13px; line-height: 1.4; word-wrap: break-word; }
 
         /* Totaux */
-        .totals-container { display: flex; flex-direction: column; align-items: flex-end; margin-top: 30px; page-break-inside: avoid; }
-        .total-box { min-width: 320px; }
-        .total-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .totals-container { display: flex; flex-direction: column; align-items: flex-end; margin-top: 25px; page-break-inside: avoid; }
+        .total-box { min-width: 280px; }
+        .total-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #eee; font-size: 13px; }
+        
         .net-a-payer {
-            background: var(--accent); color: white; padding: 15px; border-radius: 8px;
+            background: var(--accent); color: white; padding: 12px; border-radius: 6px;
             margin-top: 10px; display: flex; justify-content: space-between;
-            align-items: center; font-weight: bold; font-size: 1.3rem;
+            align-items: center; font-weight: bold; font-size: 1.1rem;
         }
 
-        .footer-devis { margin-top: 50px; font-size: 11px; color: #a0aec0; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 15px; }
+        .footer-devis { margin-top: 40px; font-size: 10px; color: #a0aec0; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 15px; }
 
-        @media print { .no-print { display: none; } }
+        /* Ajustements Mobile (Écran seulement) */
+        @media (max-width: 768px) {
+            #capture-area { 
+                width: 1000px; /* Force la largeur large pour le rendu mobile */
+                transform: scale(0.35); /* Réduit visuellement pour l'écran du tel */
+                transform-origin: top center;
+            }
+            .page-container { height: auto; overflow-x: hidden; }
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            tr { page-break-inside: avoid !important; }
+        }
     </style>
 </head>
 <body>
 
     <div class="toolbar no-print">
-        <div style="font-weight: bold; font-size: 1.1rem;">⚡ SIMEL S.E.S</div>
+        <div style="font-weight: bold;"><i class="fas fa-bolt" style="color:#e53e3e"></i> SIMEL S.E.S</div>
         <div class="btn-group">
             <a href="login.html" id="auth-link" class="btn-auth">Connexion Admin</a>
-            <button onclick="validerEtTelecharger('pdf')" class="btn-pdf">TÉLÉCHARGER PDF</button>
+            <button onclick="validerEtTelecharger('pdf')" class="btn-pdf">PDF</button>
             <button onclick="validerEtTelecharger('excel')" class="btn-excel">EXCEL</button>
         </div>
     </div>
@@ -107,22 +130,22 @@
             </div>
 
             <div class="info-grid">
-                <div class="info-card client">
-                    <small style="color:#718096; font-weight:bold;">CLIENT :</small><br>
-                    <strong id="client-view" style="font-size:1.1rem;"></strong>
+                <div class="info-card blue">
+                    <small>Client / Projet :</small>
+                    <strong id="client-view">...</strong>
                 </div>
-                <div class="info-card expert">
-                    <small style="color:#718096; font-weight:bold;">EXPERT :</small><br>
-                    <strong id="expert-view" style="font-size:1.1rem;">SIMPLICE OLOUBI</strong>
+                <div class="info-card dark">
+                    <small>Expert Responsable :</small>
+                    <strong id="expert-view">SIMPLICE OLOUBI</strong>
                 </div>
             </div>
 
             <table id="table-devis">
                 <thead>
                     <tr>
-                        <th style="width:60%">Description</th>
-                        <th style="text-align:center; width:10%">Qté</th>
-                        <th style="text-align:right; width:30%">Total (FCFA)</th>
+                        <th style="width: 60%;">Description</th>
+                        <th style="text-align:center; width: 10%;">Qté</th>
+                        <th style="text-align:right; width: 30%;">Total (FCFA)</th>
                     </tr>
                 </thead>
                 <tbody id="table-body"></tbody>
@@ -141,7 +164,8 @@
             </div>
             
             <div class="footer-devis">
-                Document généré professionnellement par SIMEL S.E.S. Validité : 30 jours.
+                Ce devis est une estimation officielle de SIMEL Énergie et Sécurité.<br>
+                Validité : 30 jours. Merci pour votre confiance !
             </div>
         </div>
     </div>
@@ -167,8 +191,10 @@
             } else {
                 FedaCheckout.init({
                     public_key: 'pk_live_votre_cle_ici',
-                    transaction: { amount: 500, description: 'Téléchargement Devis' },
-                    onComplete: function(res) { if (res.status === 'approved') format === 'pdf' ? genererPDF() : genererExcel(); }
+                    transaction: { amount: 500, description: 'Téléchargement Devis SIMEL' },
+                    onComplete: function(res) {
+                        if (res.status === 'approved') format === 'pdf' ? genererPDF() : genererExcel();
+                    }
                 });
                 FedaCheckout.open();
             }
@@ -178,27 +204,29 @@
             const element = document.getElementById('capture-area');
             const clientName = localStorage.getItem("client") || "Client";
             
-            // Correction CRITIQUE : scrollY: 0 empêche le décalage vers le bas (le vide en haut)
+            window.scrollTo(0, 0); // Crucial pour mobile
+
             const opt = {
-                margin: [10, 10, 10, 10],
+                margin: [10, 10, 10, 10], // Marges égales sur le PDF final
                 filename: 'Devis_SIMEL_' + clientName + '.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
                     scale: 2, 
                     useCORS: true, 
-                    scrollY: 0, // <--- C'est ça qui règle le problème du vide blanc
-                    windowWidth: 1000 
+                    scrollY: 0, // Supprime le vide blanc en haut
+                    windowWidth: 1100 // Stabilise la largeur pour smartphone
                 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: 'avoid-all' }
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
+            
             html2pdf().set(opt).from(element).save();
         }
 
         function genererExcel() {
             const table = document.getElementById('table-devis');
             const wb = XLSX.utils.table_to_book(table, { sheet: "Devis" });
-            XLSX.writeFile(wb, 'Devis_SIMEL_' + (localStorage.getItem("client") || "Client") + '.xlsx');
+            XLSX.writeFile(wb, 'Devis_SIMEL.xlsx');
         }
 
         function chargerDonnees() {
