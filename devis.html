@@ -14,8 +14,9 @@
 
     <style>
         :root { --primary: #2d3748; --accent: #e53e3e; --blue: #3182ce; --green: #2f855a; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7f6; margin: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; }
 
+        /* Barre d'outils */
         .toolbar {
             background: #1a202c; padding: 10px 20px; color: white;
             display: flex; justify-content: space-between; align-items: center;
@@ -25,20 +26,20 @@
         .btn-group { display: flex; gap: 10px; }
         .btn-auth { background: transparent; border: 1px solid white; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 13px; }
         
-        /* Styles des boutons de téléchargement */
-        .btn-dl-pdf { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-dl-excel { background: var(--green); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-pdf { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-excel { background: var(--green); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
 
+        /* Page A4 */
         .page-container { padding: 20px; }
-        
-        /* La page A4 réelle */
         .page {
             background: white; width: 210mm; min-height: 297mm;
             margin: 0 auto; padding: 20mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); box-sizing: border-box;
+            position: relative;
         }
 
         .header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
         .company-info h1 { margin: 0; color: var(--primary); font-size: 24px; text-transform: uppercase; }
+        .devis-title { text-align: right; }
         .devis-title h2 { margin: 0; color: var(--accent); font-size: 30px; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -57,8 +58,7 @@
 
         @media print {
             .no-print { display: none !important; }
-            body { background: white; }
-            .page { margin: 0; box-shadow: none; width: 100%; padding: 10mm; }
+            .page { margin: 0; box-shadow: none; width: 100%; }
         }
     </style>
 </head>
@@ -68,8 +68,8 @@
         <div style="font-weight: bold;">⚡ SIMEL S.E.S</div>
         <div class="btn-group">
             <a href="login.html" id="auth-link" class="btn-auth"><i class="fas fa-user-shield"></i> Connexion Admin</a>
-            <button onclick="validerEtTelecharger('pdf')" class="btn-dl-pdf"><i class="fas fa-file-pdf"></i> PDF</button>
-            <button onclick="validerEtTelecharger('excel')" class="btn-dl-excel"><i class="fas fa-file-excel"></i> EXCEL</button>
+            <button onclick="validerEtTelecharger('pdf')" class="btn-pdf"><i class="fas fa-file-pdf"></i> PDF</button>
+            <button onclick="validerEtTelecharger('excel')" class="btn-excel"><i class="fas fa-file-excel"></i> EXCEL</button>
         </div>
     </div>
 
@@ -78,7 +78,7 @@
             <div class="header">
                 <div>
                     <h1 id="ent-nom-view">SIMEL S.E.S</h1>
-                    <p id="ent-details-view" style="font-size:12px; color:#666;"></p>
+                    <p id="ent-details-view" style="font-size:12px; color:#666; white-space: pre-line;"></p>
                 </div>
                 <div class="devis-title">
                     <h2>DEVIS</h2>
@@ -88,10 +88,12 @@
 
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:30px;">
                 <div style="background:#f8fafc; padding:15px; border-radius:8px;">
-                    <small>CLIENT :</small><br><strong id="client-view"></strong>
+                    <small style="color: #718096; font-weight: bold;">CLIENT :</small><br>
+                    <strong id="client-view" style="font-size: 1.1rem; color: #2d3748;"></strong>
                 </div>
                 <div style="background:#f8fafc; padding:15px; border-radius:8px;">
-                    <small>EXPERT :</small><br><strong id="expert-view">SIMPLICE OLOUBI</strong>
+                    <small style="color: #718096; font-weight: bold;">EXPERT :</small><br>
+                    <strong id="expert-view" style="font-size: 1.1rem; color: #2d3748;">SIMPLICE OLOUBI</strong>
                 </div>
             </div>
 
@@ -117,6 +119,10 @@
                     </div>
                 </div>
             </div>
+            
+            <div style="margin-top: 50px; font-size: 11px; color: #a0aec0; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 10px;">
+                Devis généré par SIMEL S.E.S - Document valable 30 jours.
+            </div>
         </div>
     </div>
 
@@ -125,12 +131,13 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12dHFydmJkaHZkYXhsZmhneXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NzMwNDAsImV4cCI6MjA4MjM0OTA0MH0.LJRT3MJpGmlZHyZ0Zdn3HliE3RsWu6XlgrYsBOyLbM8'; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // 1. Vérifie si Simplice est connecté
         async function checkAdminStatus() {
             const { data: { session } } = await _supabase.auth.getSession();
             if (session) {
                 const { data: profile } = await _supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
                 if (profile && profile.is_admin) {
-                    document.getElementById('auth-link').innerHTML = "✅ ADMIN CONNECTÉ";
+                    document.getElementById('auth-link').innerHTML = "✅ ADMIN : " + session.user.email;
                     document.getElementById('auth-link').style.borderColor = "#48bb78";
                     return true;
                 }
@@ -138,14 +145,12 @@
             return false;
         }
 
+        // 2. Logique de téléchargement (Admin = gratuit, Client = FedaPay)
         async function validerEtTelecharger(format) {
             const isAdmin = await checkAdminStatus();
-            
             if (isAdmin) {
-                // Si admin, on lance directement le format choisi
                 format === 'pdf' ? genererPDF() : genererExcel();
             } else {
-                // Si pas admin, FedaPay d'abord
                 FedaCheckout.init({
                     public_key: 'pk_live_votre_cle_ici',
                     transaction: { amount: 500, description: 'Téléchargement Devis SIMEL' },
@@ -159,27 +164,35 @@
             }
         }
 
+        // 3. Génération PDF
         function genererPDF() {
             const element = document.getElementById('capture-area');
             const opt = {
                 margin: 0,
-                filename: 'Devis_SIMEL_' + document.getElementById('client-view').innerText + '.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
+                filename: 'Devis_SIMEL_' + (localStorage.getItem("client") || "Client") + '.pdf',
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().set(opt).from(element).save();
         }
 
+        // 4. Génération Excel
         function genererExcel() {
             const table = document.getElementById('table-devis');
-            const wb = XLSX.utils.table_to_book(table, { sheet: "Devis" });
-            XLSX.writeFile(wb, 'Devis_SIMEL_' + document.getElementById('client-view').innerText + '.xlsx');
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Devis SIMEL" });
+            XLSX.writeFile(wb, 'Devis_SIMEL_' + (localStorage.getItem("client") || "Client") + '.xlsx');
         }
 
+        // 5. Remplissage des données (Entreprise + Articles)
         function chargerDonnees() {
+            // RECUPÉRATION DES INFOS DE L'ACCUEIL
+            document.getElementById('ent-nom-view').innerText = localStorage.getItem("ent_nom") || "SIMEL S.E.S";
+            document.getElementById('ent-details-view').innerText = localStorage.getItem("ent_details") || "Adresse non définie\nTél: -- -- -- --";
+
             document.getElementById('date-view').innerText = new Date().toLocaleDateString('fr-FR');
-            document.getElementById('client-view').innerText = localStorage.getItem("client") || "CLIENT";
+            document.getElementById('client-view').innerText = localStorage.getItem("client") || "Non précisé";
+            document.getElementById('expert-view').innerText = localStorage.getItem("electricien") || "SIMPLICE OLOUBI";
             
             const produits = JSON.parse(localStorage.getItem("devis_final_produits") || "[]");
             let totalMatos = 0;
@@ -190,7 +203,7 @@
                 const total = p.prix * p.quantite;
                 totalMatos += total;
                 tbody.innerHTML += `<tr>
-                    <td><strong>${p.nom}</strong><br><small>${p.caract || ''}</small></td>
+                    <td><strong>${p.nom}</strong><br><small style="color:#718096">${p.caract || ''}</small></td>
                     <td style="text-align:center">${p.quantite}</td>
                     <td style="text-align:right">${total.toLocaleString()} F</td>
                 </tr>`;
