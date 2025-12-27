@@ -5,60 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIMEL S.E.S | Connexion Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary: #2b6cb0; --secondary: #e53e3e; --dark: #1a202c; }
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background: var(--dark); 
-            display: flex; justify-content: center; align-items: center; 
-            height: 100vh; margin: 0; color: white;
-        }
-        .login-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 40px; border-radius: 20px;
-            width: 100%; max-width: 380px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.1);
-            text-align: center;
-        }
-        h1 { font-size: 2.2rem; margin-bottom: 5px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; color: white; }
+        .login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); padding: 40px; border-radius: 20px; width: 100%; max-width: 380px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); text-align: center; }
         h1 span { color: var(--secondary); }
-        .sub-title { opacity: 0.7; margin-bottom: 30px; font-size: 0.9rem; letter-spacing: 1px; }
-        
-        input {
-            width: 100%; padding: 14px; margin: 10px 0;
-            border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(0,0,0,0.3); color: white; box-sizing: border-box;
-            font-size: 1rem;
-        }
-        .btn-auth {
-            width: 100%; padding: 15px; background: var(--primary);
-            border: none; border-radius: 10px; color: white;
-            font-weight: bold; cursor: pointer; margin-top: 20px; 
-            transition: 0.3s; font-size: 1rem; text-transform: uppercase;
-        }
-        .btn-auth:hover { background: #3182ce; transform: translateY(-2px); }
-        
-        #error-msg { 
-            color: #feb2b2; font-size: 0.85rem; margin-top: 20px; 
-            display: none; background: rgba(229, 62, 62, 0.2); 
-            padding: 12px; border-radius: 8px; border: 1px solid rgba(229, 62, 62, 0.3);
-        }
+        input { width: 100%; padding: 14px; margin: 10px 0; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; box-sizing: border-box; font-size: 1rem; }
+        .btn-auth { width: 100%; padding: 15px; background: var(--primary); border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; margin-top: 20px; text-transform: uppercase; }
+        #error-msg { color: #feb2b2; font-size: 0.85rem; margin-top: 20px; display: none; background: rgba(229, 62, 62, 0.2); padding: 12px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
     <div class="login-card">
         <h1>⚡ SIMEL <span>S.E.S</span></h1>
-        <p class="sub-title">ADMINISTRATION</p>
-
+        <p style="opacity: 0.7; margin-bottom: 20px;">CONNEXION ADMINISTRATEUR</p>
         <input type="email" id="email" placeholder="Email admin">
         <input type="password" id="password" placeholder="Mot de passe">
-        
         <button id="btn-action" class="btn-auth" onclick="handleAuth()">Se Connecter</button>
-        
         <div id="error-msg"></div>
     </div>
 
@@ -71,43 +35,39 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorBox = document.getElementById('error-msg');
+            const btn = document.getElementById('btn-action');
+
+            btn.innerText = "Vérification...";
             errorBox.style.display = 'none';
 
-            if(!email || !password) {
-                showError("Veuillez saisir vos identifiants.");
-                return;
-            }
-
             try {
-                // Tentative de connexion
+                // 1. Connexion forcée
                 const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-                
                 if (error) throw error;
 
-                // Une fois connecté, on vérifie si l'utilisateur est admin dans la table 'profiles'
-                const { data: profile, error: profileError } = await _supabase
+                console.log("Connecté, vérification du profil...");
+
+                // 2. Vérification immédiate de la table 'profiles'
+                const { data: profile, error: pError } = await _supabase
                     .from('profiles')
                     .select('is_admin')
                     .eq('id', data.user.id)
-                    .single();
+                    .maybeSingle();
 
-                if (profile && profile.is_admin) {
-                    // C'EST L'ADMIN -> Direction vers le Devis pour débloquer le bouton
-                    window.location.href = 'devis.html';
+                // 3. Redirection FORCÉE
+                if (profile && profile.is_admin === true) {
+                    console.log("Admin détecté ! Redirection...");
+                    window.location.replace('devis.html'); // .replace est plus fort que .href
                 } else {
-                    // UTILISATEUR SIMPLE -> Accueil
-                    window.location.href = 'accueil.html';
+                    console.log("Utilisateur simple détecté.");
+                    window.location.replace('accueil.html');
                 }
 
             } catch (err) {
-                showError("Accès refusé : " + err.message);
+                btn.innerText = "Se Connecter";
+                errorBox.innerText = "Accès refusé : " + err.message;
+                errorBox.style.display = 'block';
             }
-        }
-
-        function showError(msg) {
-            const errorBox = document.getElementById('error-msg');
-            errorBox.innerText = msg;
-            errorBox.style.display = 'block';
         }
     </script>
 </body>
