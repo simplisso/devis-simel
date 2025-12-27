@@ -12,7 +12,6 @@
         :root { --primary: #2d3748; --accent: #e53e3e; --blue: #3182ce; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7f6; margin: 0; }
 
-        /* Barre d'outils corrigée */
         .toolbar {
             background: #1a202c; padding: 10px 20px; color: white;
             display: flex; justify-content: space-between; align-items: center;
@@ -20,62 +19,36 @@
         }
 
         .btn-group { display: flex; gap: 10px; }
-        
         .btn-auth { background: transparent; border: 1px solid white; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 13px; }
-        .btn-dl { background: var(--blue); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-dl { background: var(--blue); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
 
-        /* Page A4 */
         .page {
             background: white; width: 210mm; min-height: 297mm;
-            margin: 20px auto; padding: 20mm; box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            margin: 20px auto; padding: 20mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); box-sizing: border-box;
         }
 
         .header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
-        .company-info h1 { margin: 0; color: var(--primary); font-size: 24px; }
+        .company-info h1 { margin: 0; color: var(--primary); font-size: 24px; text-transform: uppercase; }
         .devis-title h2 { margin: 0; color: var(--accent); font-size: 30px; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background: var(--primary); color: white; padding: 12px; text-align: left; }
-        td { padding: 12px; border-bottom: 1px solid #edf2f7; }
+        td { padding: 12px; border-bottom: 1px solid #edf2f7; font-size: 14px; }
 
-        /* Bloc de Total Auto-Adaptatif */
-        .totals-container {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end; /* Aligne tout à droite */
-            margin-top: 30px;
-        }
-
-        .total-box {
-            min-width: 300px; /* Largeur minimum pour éviter le décalage */
-            width: auto; /* S'élargit si le montant est grand */
-        }
-
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-            gap: 20px;
-        }
+        .totals-container { display: flex; flex-direction: column; align-items: flex-end; margin-top: 30px; }
+        .total-box { min-width: 320px; width: auto; }
+        .total-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; gap: 30px; }
 
         .net-a-payer {
-            background: var(--accent);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-            white-space: nowrap; /* Empêche le montant de revenir à la ligne */
+            background: var(--accent); color: white; padding: 15px; border-radius: 8px;
+            margin-top: 10px; display: flex; justify-content: space-between;
+            align-items: center; font-weight: bold; font-size: 1.3rem; white-space: nowrap;
         }
 
         @media print {
             .no-print { display: none !important; }
-            .page { margin: 0; box-shadow: none; width: 100%; }
+            body { background: white; }
+            .page { margin: 0; box-shadow: none; width: 100%; padding: 10mm; }
         }
     </style>
 </head>
@@ -139,47 +112,77 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12dHFydmJkaHZkYXhsZmhneXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NzMwNDAsImV4cCI6MjA4MjM0OTA0MH0.LJRT3MJpGmlZHyZ0Zdn3HliE3RsWu6XlgrYsBOyLbM8'; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Vérification Admin au chargement
         async function checkAdminStatus() {
             const { data: { session } } = await _supabase.auth.getSession();
             if (session) {
                 const { data: profile } = await _supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
                 if (profile && profile.is_admin) {
-                    document.getElementById('auth-link').innerHTML = "✅ MODE ADMIN";
-                    document.getElementById('auth-link').style.borderColor = "#48bb78";
+                    const btnDl = document.getElementById('btn-action');
+                    const authBtn = document.getElementById('auth-link');
+                    btnDl.innerHTML = '<i class="fas fa-check-circle"></i> TÉLÉCHARGER (ADMIN)';
+                    btnDl.style.background = "#48bb78";
+                    authBtn.innerHTML = "✅ ADMIN CONNECTÉ";
+                    authBtn.style.borderColor = "#48bb78";
                 }
             }
         }
 
-        // Action de téléchargement
         async function executerTelechargement() {
             const { data: { session } } = await _supabase.auth.getSession();
             
-            // Si Admin -> Imprime direct
             if (session) {
                 const { data: profile } = await _supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
-                if (profile && profile.is_admin) { window.print(); return; }
+                if (profile && profile.is_admin) { 
+                    window.print(); 
+                    return; 
+                }
             }
 
-            // Sinon -> FedaPay
             FedaCheckout.init({
-                public_key: 'pk_sandbox_votre_cle',
+                public_key: 'pk_live_votre_cle_ici', // Mets ta clé live ici plus tard
                 transaction: { amount: 500, description: 'Devis SIMEL S.E.S' },
                 onComplete: function(res) { if (res.status === 'approved') window.print(); }
             });
             FedaCheckout.open();
         }
 
-        document.getElementById('btn-action').onclick = executerTelechargement;
-        window.onload = () => { checkAdminStatus(); chargerDonnees(); };
-
         function chargerDonnees() {
-            // ... (Ici le code habituel pour remplir le tableau depuis localStorage) ...
-            // J'ai optimisé les calculs pour qu'ils s'affichent correctement dans les IDs
             document.getElementById('date-view').innerText = new Date().toLocaleDateString('fr-FR');
-            // Récupère les totaux et les injecte dans les ID res-matos, res-main, res-tva et res-ttc
+            document.getElementById('client-view').innerText = localStorage.getItem("client") || "Non spécifié";
+            document.getElementById('expert-view').innerText = localStorage.getItem("electricien") || "SIMPLICE OLOUBI";
+            
+            const produits = JSON.parse(localStorage.getItem("devis_final_produits") || "[]");
+            let totalMatos = 0;
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = "";
+
+            produits.forEach(p => {
+                const total = p.prix * p.quantite;
+                totalMatos += total;
+                tbody.innerHTML += `<tr>
+                    <td><strong>${p.nom}</strong><br><small>${p.caract || ''}</small></td>
+                    <td style="text-align:center">${p.quantite}</td>
+                    <td style="text-align:right">${total.toLocaleString()} F</td>
+                </tr>`;
+            });
+
+            const main = parseFloat(localStorage.getItem("mainManuelle")) || 0;
+            const ht = totalMatos + main;
+            const tva = Math.round(ht * 0.18);
+            const ttc = ht + tva;
+
+            document.getElementById('res-matos').innerText = totalMatos.toLocaleString() + " F";
+            document.getElementById('res-main').innerText = main.toLocaleString() + " F";
+            document.getElementById('res-tva').innerText = tva.toLocaleString() + " F";
+            document.getElementById('res-ttc').innerText = ttc.toLocaleString() + " FCFA";
         }
+
+        document.getElementById('btn-action').onclick = executerTelechargement;
+        
+        window.onload = async () => { 
+            await checkAdminStatus(); 
+            chargerDonnees(); 
+        };
     </script>
 </body>
 </html>
-
