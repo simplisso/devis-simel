@@ -76,6 +76,33 @@
             .page-container { padding: 0; }
             .page { margin: 0; box-shadow: none; width: 100%; }
         }
+
+        @media print {
+    /* Force un saut de page propre pour les lignes du tableau */
+    tr { page-break-inside: avoid; }
+
+    /* Ajoute un espace automatique en haut de chaque nouvelle page */
+    .page {
+        margin-top: 0;
+        padding-top: 0;
+    }
+
+    /* Cette astuce crée un espace vide "fantôme" en haut de chaque page sauf la première */
+    thead { display: table-header-group; } 
+    
+    /* Pour forcer un espacement sur les pages suivantes */
+    tbody::before {
+        content: "";
+        display: block;
+        height: 50px; /* Ajuste cette valeur pour laisser de la place en haut */
+    }
+}
+
+/* Style spécifique pour éviter que les totaux soient coupés en deux */
+.totals-container {
+    page-break-inside: avoid;
+    margin-top: 30px;
+}
     </style>
 </head>
 <body>
@@ -269,3 +296,4 @@
     </script>
 </body>
 </html>
+
