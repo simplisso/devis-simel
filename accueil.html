@@ -109,12 +109,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('date').valueAsDate = new Date();
             
-            // Charger les infos si elles existent déjà
+            // Recharger les infos sauvegardées
             if(localStorage.getItem("ent_nom")) document.getElementById("ent-nom").value = localStorage.getItem("ent_nom");
             if(localStorage.getItem("ent_contact")) document.getElementById("ent-contact").value = localStorage.getItem("ent_contact");
             if(localStorage.getItem("ent_adresse")) document.getElementById("ent-adresse").value = localStorage.getItem("ent_adresse");
             
-            // Charger le logo existant
             const savedLogo = localStorage.getItem("ent_logo");
             if(savedLogo) {
                 base64Logo = savedLogo;
@@ -142,15 +141,19 @@
             const client = document.getElementById("client").value.trim();
             if (!client) return alert("Veuillez saisir le nom du client.");
 
-            // GESTION DES VALEURS PAR DÉFAUT SI VIDE
             const entNom = document.getElementById("ent-nom").value.trim() || "SIMEL S.E.S";
-            const entContact = document.getElementById("ent-contact").value.trim() || "+229 XX XX XX XX";
-            const entAdresse = document.getElementById("ent-adresse").value.trim() || "Cotonou, Bénin";
+            const entContact = document.getElementById("ent-contact").value.trim();
+            const entAdresse = document.getElementById("ent-adresse").value.trim();
 
+            // CRÉATION DE LA CHAINE DE DÉTAILS POUR LE DEVIS
+            const entDetails = `${entAdresse}\nTél: ${entContact}`;
+
+            // SAUVEGARDE POUR LE DEVIS
             localStorage.setItem("ent_nom", entNom);
+            localStorage.setItem("ent_details", entDetails); // Cette clé est lue par devis.html
             localStorage.setItem("ent_contact", entContact);
             localStorage.setItem("ent_adresse", entAdresse);
-            localStorage.setItem("ent_logo", base64Logo); // Sauvegarde le logo
+            localStorage.setItem("ent_logo", base64Logo);
 
             localStorage.setItem("client", client);
             localStorage.setItem("electricien", document.getElementById("electricien").value || "Simplice OLOUBI");
@@ -158,7 +161,15 @@
             localStorage.setItem("modeMain", document.getElementById("modeMain").value);
             localStorage.setItem("heures", document.getElementById("heures").value);
             localStorage.setItem("tarifHoraire", document.getElementById("tarifHoraire").value);
-            localStorage.setItem("mainManuelle", document.getElementById("mainManuelle").value);
+            
+            // Calculer la main d'oeuvre finale
+            let mainFinale = 0;
+            if(document.getElementById("modeMain").value === "auto") {
+                mainFinale = document.getElementById("heures").value * document.getElementById("tarifHoraire").value;
+            } else {
+                mainFinale = document.getElementById("mainManuelle").value || 0;
+            }
+            localStorage.setItem("mainManuelle", mainFinale);
 
             window.location.href = "produits.html";
         }
