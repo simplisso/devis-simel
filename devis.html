@@ -3,159 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIMEL S.E.S | Devis Final</title>
-    <link rel="stylesheet" href="style-pro.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>SIMEL S.E.S | Impression Devis</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.fedapay.com/checkout.js?v=1.1.7"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { background: #f4f7f6; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        .devis-body {
-            background: white; padding: 40px; margin: 20px auto; max-width: 900px;
-            border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-        .header-simel {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 20px; background: #2d3748; color: white;
-        }
-        .devis-header {
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 3px solid #2d3748; padding-bottom: 20px; margin-bottom: 30px;
-        }
-        .header-left { display: flex; align-items: center; gap: 20px; }
-        .logo-box { width: 80px; height: 80px; display: flex; align-items: center; }
-        .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .ent-infos { display: flex; flex-direction: column; }
-        .ent-nom { margin: 0; font-size: 1.5rem; color: #2d3748; text-transform: uppercase; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #2d3748; color: white; padding: 12px; text-align: left; font-size: 0.8rem; }
-        td { padding: 12px; border-bottom: 1px solid #edf2f7; font-size: 0.9rem; }
-        
-        .recap { margin-left: auto; width: 300px; margin-top: 30px; }
-        .recap-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
-        .total-box { background: #e53e3e; color: white; padding: 15px; border-radius: 8px; font-weight: bold; margin-top: 10px; }
+        :root { --primary: #2d3748; --accent: #e53e3e; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; }
 
+        /* Barre d'outils (cachée à l'impression) */
+        .toolbar {
+            background: #1a202c; padding: 15px 20px; color: white;
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        /* Style de la page Devis (Format A4) */
+        .page {
+            background: white; width: 210mm; min-height: 297mm;
+            margin: 20px auto; padding: 20mm; box-sizing: border-box;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1); border-radius: 5px;
+        }
+
+        .header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
+        .logo-box img { max-width: 120px; max-height: 80px; }
+        .company-info h1 { margin: 0; color: var(--primary); font-size: 24px; text-transform: uppercase; }
+        .company-info p { margin: 2px 0; font-size: 12px; color: #666; }
+
+        .devis-title { text-align: right; }
+        .devis-title h2 { margin: 0; color: var(--accent); font-size: 30px; }
+        
+        .client-expert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
+        .info-card { background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary); }
+        .info-card small { color: #718096; text-transform: uppercase; font-size: 10px; font-weight: bold; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: var(--primary); color: white; padding: 12px; text-align: left; font-size: 13px; }
+        td { padding: 12px; border-bottom: 1px solid #edf2f7; font-size: 14px; }
+
+        .totals { margin-left: auto; width: 250px; margin-top: 30px; }
+        .total-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .net-a-payer { background: var(--accent); color: white; padding: 15px; border-radius: 8px; margin-top: 10px; font-weight: bold; font-size: 18px; }
+
+        .btn-dl { background: #3182ce; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        
         @media print {
             .no-print { display: none !important; }
-            .devis-body { box-shadow: none; margin: 0; width: 100%; }
+            body { background: white; }
+            .page { margin: 0; box-shadow: none; width: 100%; padding: 10mm; }
         }
     </style>
 </head>
 <body>
 
-    <header class="header-simel no-print">
-        <div class="logo">SIMEL <span>S.E.S</span></div>
-        <div style="display: flex; gap: 10px;">
-            <button onclick="window.location.href='login.html'" class="btn-simel" style="background: #4a5568; width: auto; font-size: 0.8rem;">
-                <i class="fas fa-user-shield"></i> ESPACE ADMIN
-            </button>
-            <button id="btn-action" class="btn-simel" style="width:auto; padding: 10px 20px;">
-                <i class="fas fa-download"></i> TÉLÉCHARGER
-            </button>
-        </div>
-    </header>
+    <div class="toolbar no-print">
+        <div style="font-weight: bold;">⚡ SIMEL S.E.S <span style="color: #63b3ed;">| DEVIS PRO</span></div>
+        <button id="btn-action" class="btn-dl">
+            <i class="fas fa-file-pdf"></i> TÉLÉCHARGER LE PDF
+        </button>
+    </div>
 
-    <div class="devis-body">
-        <div class="devis-header">
-            <div class="header-left">
+    <div class="page" id="devis-content">
+        <div class="header">
+            <div class="company-info">
                 <div id="logo-view" class="logo-box"></div>
-                <div class="ent-infos">
-                    <h1 id="ent-nom-view" class="ent-nom"></h1>
-                    <p id="ent-details-view" style="margin:5px 0; font-size:0.85rem; color:#718096;"></p>
-                </div>
+                <h1 id="ent-nom-view">SIMEL S.E.S</h1>
+                <p id="ent-details-view"></p>
             </div>
-            <div style="text-align: right;">
-                <h2 style="margin:0; color:#e53e3e;">DEVIS</h2>
-                <p id="date-view" style="margin:5px 0; font-weight:bold;"></p>
+            <div class="devis-title">
+                <h2>DEVIS</h2>
+                <p id="date-view" style="font-weight: bold;"></p>
+                <p style="font-size: 12px; color: #718096;">Réf: SIMEL-2025-001</p>
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
-            <div style="background:#f7fafc; padding:15px; border-radius:8px;">
-                <small>CLIENT :</small><br><strong id="client-view"></strong>
+        <div class="client-expert-grid">
+            <div class="info-card">
+                <small>CLIENT</small><br>
+                <strong id="client-view" style="font-size: 16px;"></strong>
             </div>
-            <div style="background:#f7fafc; padding:15px; border-radius:8px;">
-                <small>ÉTABLI PAR :</small><br><strong id="expert-view"></strong>
+            <div class="info-card">
+                <small>ÉTABLI PAR L'EXPERT</small><br>
+                <strong id="expert-view" style="font-size: 16px;">SIMPLICE OLOUBI</strong>
             </div>
         </div>
 
         <table>
             <thead>
                 <tr>
-                    <th>Désignation</th>
-                    <th style="text-align:right">Qté</th>
-                    <th style="text-align:right">P.U HT</th>
-                    <th style="text-align:right">Total HT</th>
+                    <th>DESCRIPTION DES TRAVAUX / MATÉRIELS</th>
+                    <th style="text-align:center">QTÉ</th>
+                    <th style="text-align:right">P.U (FCFA)</th>
+                    <th style="text-align:right">TOTAL (FCFA)</th>
                 </tr>
             </thead>
             <tbody id="table-body"></tbody>
         </table>
 
-        <div class="recap">
-            <div class="recap-row"><span>Total Matériel</span><span id="res-matos"></span></div>
-            <div class="recap-row"><span>Main d'œuvre</span><span id="res-main"></span></div>
-            <div class="recap-row"><span>TVA (18%)</span><span id="res-tva"></span></div>
-            <div class="total-box">
+        <div class="totals">
+            <div class="total-row"><span>Total Matériel</span><span id="res-matos"></span></div>
+            <div class="total-row"><span>Main d'œuvre</span><span id="res-main"></span></div>
+            <div class="total-row"><span>TVA (18%)</span><span id="res-tva"></span></div>
+            <div class="net-a-payer">
                 <span>NET À PAYER</span>
                 <span id="res-ttc" style="float:right;"></span>
             </div>
+        </div>
+
+        <div style="margin-top: 50px; font-size: 11px; color: #718096; border-top: 1px solid #eee; padding-top: 10px;">
+            * Ce devis est valable pour une durée de 30 jours. Les travaux commenceront après validation et versement d'un acompte.
         </div>
     </div>
 
     <script>
         const SUPABASE_URL = 'https://mvtqrvbdhvdaxlfhgyqq.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12dHFydmJkaHZkYXhsZmhneXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NzMwNDAsImV4cCI6MjA4MjM0OTA0MH0.LJRT3MJpGmlZHyZ0Zdn3HliE3RsWu6XlgrYsBOyLbM8';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // Ta clé
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function lancerAction() {
+        // ACTION DU BOUTON
+        async function executerTelechargement() {
             const { data: { session } } = await _supabase.auth.getSession();
 
+            // 1. Vérifier si c'est Toi (ADMIN)
             if (session) {
-                // Vérifier si Admin
-                const { data: profile, error } = await _supabase
-                    .from('profiles')
-                    .select('is_admin')
-                    .eq('id', session.user.id)
-                    .single();
-
+                const { data: profile } = await _supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
                 if (profile && profile.is_admin) {
-                    window.print();
+                    window.print(); // L'admin imprime direct en PDF
                     return;
                 }
             }
 
-            // Si non admin, on lance FedaPay (Mode Test forcé pour que ça marche)
-            try {
-                FedaCheckout.init({
-                    public_key: 'pk_sandbox_votre_cle_test', 
-                    transaction: {
-                        amount: 500,
-                        description: 'Devis SIMEL S.E.S'
-                    },
-                    onComplete: function(response) {
-                        if (response.status === 'approved') window.print();
-                    }
-                });
-                FedaCheckout.open();
-            } catch (e) {
-                alert("Erreur technique. Si vous êtes l'admin, connectez-vous.");
-            }
+            // 2. Sinon : Lancer FedaPay
+            FedaCheckout.init({
+                public_key: 'pk_sandbox_votre_cle_test', 
+                transaction: { amount: 500, description: 'Téléchargement Devis SIMEL S.E.S' },
+                onComplete: function(res) {
+                    if (res.status === 'approved') window.print();
+                }
+            });
+            FedaCheckout.open();
         }
 
-        document.getElementById('btn-action').onclick = lancerAction;
+        document.getElementById('btn-action').onclick = executerTelechargement;
 
+        // CHARGEMENT DES DONNÉES DEPUIS LE LOCALSTORAGE
         window.onload = () => {
             const logo = localStorage.getItem("ent_logo");
             if(logo) document.getElementById("logo-view").innerHTML = `<img src="${logo}">`;
             
             document.getElementById('ent-nom-view').innerText = localStorage.getItem("ent_nom") || "SIMEL S.E.S";
             document.getElementById('ent-details-view').innerHTML = `${localStorage.getItem("ent_adresse") || ""}<br>${localStorage.getItem("ent_contact") || ""}`;
-            document.getElementById('client-view').innerText = localStorage.getItem("client") || "Inconnu";
+            document.getElementById('client-view').innerText = localStorage.getItem("client") || "Nom du client";
             document.getElementById('expert-view').innerText = localStorage.getItem("electricien") || "SIMPLICE OLOUBI";
-            document.getElementById('date-view').innerText = new Date().toLocaleDateString();
+            document.getElementById('date-view').innerText = new Date().toLocaleDateString('fr-FR');
 
             const produits = JSON.parse(localStorage.getItem("devis_final_produits") || "[]");
             let totalM = 0;
@@ -165,16 +167,16 @@
                 const total = p.prix * p.quantite;
                 totalM += total;
                 tbody.innerHTML += `<tr>
-                    <td><strong>${p.nom}</strong><br><small>${p.caract || ''}</small></td>
-                    <td style="text-align:right">${p.quantite}</td>
+                    <td><strong>${p.nom}</strong><br><small style="color:#666">${p.caract || ''}</small></td>
+                    <td style="text-align:center">${p.quantite}</td>
                     <td style="text-align:right">${p.prix.toLocaleString()}</td>
-                    <td style="text-align:right">${total.toLocaleString()} F</td>
+                    <td style="text-align:right">${total.toLocaleString()}</td>
                 </tr>`;
             });
 
             const main = parseFloat(localStorage.getItem("mainManuelle")) || 0;
             const ht = totalM + main;
-            const tva = ht * 0.18;
+            const tva = Math.round(ht * 0.18);
             const ttc = ht + tva;
 
             document.getElementById('res-matos').innerText = totalM.toLocaleString() + " F";
