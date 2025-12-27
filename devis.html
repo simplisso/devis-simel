@@ -16,7 +16,7 @@
         :root { --primary: #2d3748; --accent: #e53e3e; --blue: #3182ce; --green: #2f855a; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; }
 
-        /* Barre d'outils en haut */
+        /* Barre d'outils */
         .toolbar {
             background: #1a202c; padding: 10px 20px; color: white;
             display: flex; justify-content: space-between; align-items: center;
@@ -24,32 +24,27 @@
         }
 
         .btn-group { display: flex; gap: 10px; }
-        .btn-auth { background: transparent; border: 1px solid white; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 13px; transition: 0.3s; }
-        .btn-auth:hover { background: rgba(255,255,255,0.1); }
-        
-        .btn-pdf { background: var(--accent); color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-excel { background: var(--green); color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-pdf:hover, .btn-excel:hover { transform: translateY(-2px); opacity: 0.9; }
+        .btn-auth { background: transparent; border: 1px solid white; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 13px; }
+        .btn-pdf { background: var(--accent); color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-excel { background: var(--green); color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; font-weight: bold; }
 
-        /* Zone de la page A4 */
-        .page-container { padding: 20px; }
+        /* Zone A4 avec marges égales */
+        .page-container { padding: 20px; display: flex; justify-content: center; }
         .page {
             background: white; width: 210mm; min-height: 297mm;
-            margin: 0 auto; padding: 20mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); box-sizing: border-box;
+            margin: 0 auto; padding: 15mm; /* Marges égales partout */
+            box-shadow: 0 0 20px rgba(0,0,0,0.1); box-sizing: border-box;
             position: relative;
         }
 
-        /* En-tête avec Logo */
+        /* En-tête */
         .header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; align-items: flex-start; }
         .company-header { display: flex; align-items: center; gap: 20px; }
         #logo-view { max-width: 120px; max-height: 90px; object-fit: contain; }
-        
         .company-info h1 { margin: 0; color: var(--primary); font-size: 24px; text-transform: uppercase; }
         .company-info p { margin: 5px 0 0 0; font-size: 12px; color: #666; white-space: pre-line; line-height: 1.4; }
-        
         .devis-title { text-align: right; }
         .devis-title h2 { margin: 0; color: var(--accent); font-size: 30px; letter-spacing: 2px; }
-        .devis-title p { margin: 5px 0; font-weight: bold; font-size: 14px; }
 
         /* Tableaux */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -57,20 +52,22 @@
         td { padding: 12px; border-bottom: 1px solid #edf2f7; font-size: 14px; }
 
         /* Totaux */
-        .totals-container { display: flex; flex-direction: column; align-items: flex-end; margin-top: 30px; }
+        .totals-container { display: flex; flex-direction: column; align-items: flex-end; margin-top: 30px; page-break-inside: avoid; }
         .total-box { min-width: 320px; }
         .total-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
-        
         .net-a-payer {
             background: var(--accent); color: white; padding: 15px; border-radius: 8px;
             margin-top: 10px; display: flex; justify-content: space-between;
             align-items: center; font-weight: bold; font-size: 1.3rem;
         }
 
-        /* Footer du devis */
         .footer-devis { margin-top: 50px; font-size: 11px; color: #a0aec0; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 15px; }
 
-       
+        /* Correction pour les sauts de page PDF */
+        @media print {
+            tr { page-break-inside: avoid; }
+            .no-print { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -91,13 +88,11 @@
                     <div id="logo-container" style="display: none;">
                         <img id="logo-view" src="" alt="Logo">
                     </div>
-                    
                     <div class="company-info">
                         <h1 id="ent-nom-view">SIMEL S.E.S</h1>
                         <p id="ent-details-view"></p>
                     </div>
                 </div>
-                
                 <div class="devis-title">
                     <h2>DEVIS</h2>
                     <p>Date: <span id="date-view"></span></p>
@@ -123,8 +118,7 @@
                         <th style="text-align:right">TOTAL (FCFA)</th>
                     </tr>
                 </thead>
-                <tbody id="table-body">
-                    </tbody>
+                <tbody id="table-body"></tbody>
             </table>
 
             <div class="totals-container">
@@ -147,12 +141,10 @@
     </div>
 
     <script>
-        // CONFIGURATION SUPABASE
         const SUPABASE_URL = 'https://mvtqrvbdhvdaxlfhgyqq.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12dHFydmJkaHZkYXhsZmhneXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NzMwNDAsImV4cCI6MjA4MjM0OTA0MH0.LJRT3MJpGmlZHyZ0Zdn3HliE3RsWu6XlgrYsBOyLbM8'; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 1. Vérification Admin au chargement
         async function checkAdminStatus() {
             const { data: { session } } = await _supabase.auth.getSession();
             if (session) {
@@ -160,7 +152,6 @@
                 if (profile && profile.is_admin) {
                     const authBtn = document.getElementById('auth-link');
                     authBtn.innerHTML = "<i class='fas fa-check-circle'></i> ADMIN CONNECTÉ";
-                    authBtn.style.borderColor = "#48bb78";
                     authBtn.style.color = "#48bb78";
                     return true;
                 }
@@ -168,41 +159,38 @@
             return false;
         }
 
-        // 2. Bouton Télécharger (Admin Gratuit / Client Payant)
         async function validerEtTelecharger(format) {
             const isAdmin = await checkAdminStatus();
-            
             if (isAdmin) {
                 format === 'pdf' ? genererPDF() : genererExcel();
             } else {
                 FedaCheckout.init({
-                    public_key: 'pk_live_votre_cle_ici', // Remplace par ta clé FedaPay
+                    public_key: 'pk_live_votre_cle_ici',
                     transaction: { amount: 500, description: 'Téléchargement Devis SIMEL S.E.S' },
                     onComplete: function(res) {
-                        if (res.status === 'approved') {
-                            format === 'pdf' ? genererPDF() : genererExcel();
-                        }
+                        if (res.status === 'approved') format === 'pdf' ? genererPDF() : genererExcel();
                     }
                 });
                 FedaCheckout.open();
             }
         }
 
-        // 3. Fonction de génération PDF
         function genererPDF() {
             const element = document.getElementById('capture-area');
             const clientName = localStorage.getItem("client") || "Client";
+            
+            // Configuration avec marges égales de 15mm partout pour le PDF
             const opt = {
-                margin: 0,
+                margin: [15, 15, 15, 15], 
                 filename: 'Devis_SIMEL_' + clientName + '.pdf',
-                image: { type: 'jpeg', quality: 1 },
+                image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
             html2pdf().set(opt).from(element).save();
         }
 
-        // 4. Fonction de génération EXCEL
         function genererExcel() {
             const table = document.getElementById('table-devis');
             const wb = XLSX.utils.table_to_book(table, { sheet: "Devis" });
@@ -210,30 +198,22 @@
             XLSX.writeFile(wb, 'Devis_SIMEL_' + clientName + '.xlsx');
         }
 
-        // 5. Chargement et affichage des données
         function chargerDonnees() {
-            // Affichage du Logo
             const savedLogo = localStorage.getItem("ent_logo");
-            if (savedLogo && savedLogo !== "") {
+            if (savedLogo) {
                 document.getElementById('logo-view').src = savedLogo;
                 document.getElementById('logo-container').style.display = "block";
             }
-
-            // Infos Entreprise
             document.getElementById('ent-nom-view').innerText = localStorage.getItem("ent_nom") || "SIMEL S.E.S";
-            document.getElementById('ent-details-view').innerText = localStorage.getItem("ent_details") || "Adresse non définie\nTél: -- -- -- --";
-
-            // Infos Client et Projet
+            document.getElementById('ent-details-view').innerText = localStorage.getItem("ent_details") || "Cotonou, Bénin\nTél: +229 XX XX XX XX";
             document.getElementById('date-view').innerText = localStorage.getItem("date") || new Date().toLocaleDateString('fr-FR');
             document.getElementById('client-view').innerText = localStorage.getItem("client") || "CLIENT INCONNU";
             document.getElementById('expert-view').innerText = localStorage.getItem("electricien") || "SIMPLICE OLOUBI";
             
-            // Remplissage du tableau
             const produits = JSON.parse(localStorage.getItem("devis_final_produits") || "[]");
             let totalMatos = 0;
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = "";
-
             produits.forEach(p => {
                 const total = p.prix * p.quantite;
                 totalMatos += total;
@@ -243,20 +223,16 @@
                     <td style="text-align:right">${total.toLocaleString()} F</td>
                 </tr>`;
             });
-
-            // Calculs financiers
             const main = parseFloat(localStorage.getItem("mainManuelle")) || 0;
             const ht = totalMatos + main;
             const tva = Math.round(ht * 0.18);
             const ttc = ht + tva;
-
             document.getElementById('res-matos').innerText = totalMatos.toLocaleString() + " F";
             document.getElementById('res-main').innerText = main.toLocaleString() + " F";
             document.getElementById('res-tva').innerText = tva.toLocaleString() + " F";
             document.getElementById('res-ttc').innerText = ttc.toLocaleString() + " FCFA";
         }
 
-        // Lancement au démarrage
         window.onload = async () => { 
             await checkAdminStatus(); 
             chargerDonnees(); 
@@ -264,6 +240,3 @@
     </script>
 </body>
 </html>
-
-
-
