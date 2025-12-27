@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIMEL S.E.S | Connexion</title>
+    <title>SIMEL S.E.S | Connexion Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,74 +12,60 @@
             font-family: 'Segoe UI', sans-serif; 
             background: var(--dark); 
             display: flex; justify-content: center; align-items: center; 
-            height: 100vh; margin: 0; 
-            color: white;
+            height: 100vh; margin: 0; color: white;
         }
         .login-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             padding: 40px; border-radius: 20px;
-            width: 100%; max-width: 400px;
+            width: 100%; max-width: 380px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.1);
             text-align: center;
         }
-        h1 { font-size: 2rem; margin-bottom: 10px; }
+        h1 { font-size: 2.2rem; margin-bottom: 5px; }
         h1 span { color: var(--secondary); }
-        .tabs { display: flex; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .tab { 
-            flex: 1; padding: 10px; cursor: pointer; opacity: 0.5; transition: 0.3s; 
-            border-bottom: 2px solid transparent;
-        }
-        .tab.active { opacity: 1; border-bottom: 2px solid var(--primary); font-weight: bold; }
+        .sub-title { opacity: 0.7; margin-bottom: 30px; font-size: 0.9rem; letter-spacing: 1px; }
+        
         input {
-            width: 100%; padding: 12px; margin: 10px 0;
-            border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(0,0,0,0.2); color: white; box-sizing: border-box;
+            width: 100%; padding: 14px; margin: 10px 0;
+            border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.3); color: white; box-sizing: border-box;
+            font-size: 1rem;
         }
         .btn-auth {
-            width: 100%; padding: 14px; background: var(--primary);
-            border: none; border-radius: 8px; color: white;
-            font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s;
+            width: 100%; padding: 15px; background: var(--primary);
+            border: none; border-radius: 10px; color: white;
+            font-weight: bold; cursor: pointer; margin-top: 20px; 
+            transition: 0.3s; font-size: 1rem; text-transform: uppercase;
         }
         .btn-auth:hover { background: #3182ce; transform: translateY(-2px); }
-        #error-msg { color: #feb2b2; font-size: 0.9rem; margin-top: 15px; display: none; background: rgba(229, 62, 62, 0.2); padding: 10px; border-radius: 5px; }
+        
+        #error-msg { 
+            color: #feb2b2; font-size: 0.85rem; margin-top: 20px; 
+            display: none; background: rgba(229, 62, 62, 0.2); 
+            padding: 12px; border-radius: 8px; border: 1px solid rgba(229, 62, 62, 0.3);
+        }
     </style>
 </head>
 <body>
 
     <div class="login-card">
         <h1>⚡ SIMEL <span>S.E.S</span></h1>
-        <p id="sub-title" style="opacity: 0.7;">Espace de gestion sécurisé</p>
+        <p class="sub-title">ADMINISTRATION</p>
 
-        <div class="tabs">
-            <div id="tab-login" class="tab active" onclick="switchTab('login')">Connexion</div>
-            <div id="tab-signup" class="tab" onclick="switchTab('signup')">Inscription</div>
-        </div>
-
-        <input type="email" id="email" placeholder="Email professionnel">
+        <input type="email" id="email" placeholder="Email admin">
         <input type="password" id="password" placeholder="Mot de passe">
         
-        <button id="btn-action" class="btn-auth" onclick="handleAuth()">SE CONNECTER</button>
+        <button id="btn-action" class="btn-auth" onclick="handleAuth()">Se Connecter</button>
         
         <div id="error-msg"></div>
     </div>
 
     <script>
-        // CONFIGURATION SUPABASE
         const SUPABASE_URL = 'https://mvtqrvbdhvdaxlfhgyqq.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12dHFydmJkaHZkYXhsZmhneXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NzMwNDAsImV4cCI6MjA4MjM0OTA0MH0.LJRT3MJpGmlZHyZ0Zdn3HliE3RsWu6XlgrYsBOyLbM8'; // METS TA CLÉ ICI
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12dHFydmJkaHZkYXhsZmhneXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NzMwNDAsImV4cCI6MjA4MjM0OTA0MH0.LJRT3MJpGmlZHyZ0Zdn3HliE3RsWu6XlgrYsBOyLbM8'; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        let currentMode = 'login';
-
-        function switchTab(mode) {
-            currentMode = mode;
-            document.getElementById('tab-login').className = mode === 'login' ? 'tab active' : 'tab';
-            document.getElementById('tab-signup').className = mode === 'signup' ? 'tab active' : 'tab';
-            document.getElementById('btn-action').innerText = mode === 'login' ? 'SE CONNECTER' : 'CRÉER MON COMPTE';
-            document.getElementById('error-msg').style.display = 'none';
-        }
 
         async function handleAuth() {
             const email = document.getElementById('email').value;
@@ -88,39 +74,33 @@
             errorBox.style.display = 'none';
 
             if(!email || !password) {
-                showError("Veuillez remplir tous les champs.");
+                showError("Veuillez saisir vos identifiants.");
                 return;
             }
 
             try {
-                if (currentMode === 'login') {
-                    // CONNEXION
-                    const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-                    if (error) throw error;
+                // Tentative de connexion
+                const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+                
+                if (error) throw error;
 
-                    // Vérification du profil Admin
-                    const { data: profile } = await _supabase
-                        .from('profiles')
-                        .select('is_admin')
-                        .eq('id', data.user.id)
-                        .single();
+                // Une fois connecté, on vérifie si l'utilisateur est admin dans la table 'profiles'
+                const { data: profile, error: profileError } = await _supabase
+                    .from('profiles')
+                    .select('is_admin')
+                    .eq('id', data.user.id)
+                    .single();
 
-                    if (profile && profile.is_admin) {
-                        alert("Accès Admin accordé. Redirection vers le devis...");
-                        window.location.href = 'devis.html';
-                    } else {
-                        window.location.href = 'accueil.html';
-                    }
-
+                if (profile && profile.is_admin) {
+                    // C'EST L'ADMIN -> Direction vers le Devis pour débloquer le bouton
+                    window.location.href = 'devis.html';
                 } else {
-                    // INSCRIPTION
-                    const { data, error } = await _supabase.auth.signUp({ email, password });
-                    if (error) throw error;
-                    alert("Compte créé avec succès ! Vérifiez votre boîte mail pour confirmer l'inscription.");
-                    switchTab('login');
+                    // UTILISATEUR SIMPLE -> Accueil
+                    window.location.href = 'accueil.html';
                 }
+
             } catch (err) {
-                showError(err.message);
+                showError("Accès refusé : " + err.message);
             }
         }
 
@@ -132,4 +112,3 @@
     </script>
 </body>
 </html>
-
