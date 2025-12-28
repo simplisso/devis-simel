@@ -147,7 +147,7 @@
                 format === 'pdf' ? genererPDF() : genererExcel();
             } else {
                 FedaCheckout.init({
-                    public_key: 'pk_sandbox_J-XsRnCnSHDrhJw8hbMSQHZb', 
+                    public_key: 'pk_live_votre_cle_ici', 
                     transaction: { amount: 500, description: 'Téléchargement Devis SIMEL S.E.S' },
                     onComplete: function(res) {
                         if (res.status === 'approved' || res.status === 'successful') {
@@ -214,4 +214,3 @@
     </script>
 </body>
 </html>
-
