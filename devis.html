@@ -11,61 +11,72 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <style>
-        :root { --primary: #2d3748; --accent: #e53e3e; --blue: #3182ce; --green: #2f855a; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 0; }
+ <style>
+    :root { --primary: #2d3748; --accent: #e53e3e; --blue: #3182ce; --green: #2f855a; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 0; }
 
-        .toolbar {
-            background: #1a202c; padding: 12px 25px; color: white;
-            display: flex; justify-content: space-between; align-items: center;
-            position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
+    .toolbar {
+        background: #1a202c; padding: 12px 25px; color: white;
+        display: flex; justify-content: space-between; align-items: center;
+        position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
 
-        .btn-group { display: flex; gap: 12px; }
-        .btn-auth { background: transparent; border: 1px solid white; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 13px; }
-        .btn-pdf { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-excel { background: var(--green); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    .btn-group { display: flex; gap: 12px; }
+    .btn-auth { background: transparent; border: 1px solid white; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 13px; }
+    .btn-pdf { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    .btn-excel { background: var(--green); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
 
-        /* Mise en page A4 */
-        .page-container { padding: 30px; display: flex; justify-content: center; }
-        .page {
-            background: white; width: 210mm; min-height: 297mm;
-            padding: 20mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); box-sizing: border-box;
-        }
+    /* Mise en page A4 */
+    .page-container { padding: 30px; display: flex; justify-content: center; }
+    .page {
+        background: white; width: 210mm; min-height: 297mm;
+        padding: 20mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); box-sizing: border-box;
+        position: relative;
+        overflow: hidden; /* Empêche le contenu de déborder visuellement */
+    }
 
-        /* En-tête */
-        .header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
-        #logo-view { max-width: 130px; max-height: 100px; object-fit: contain; }
-        .company-info h1 { margin: 0; color: var(--primary); font-size: 26px; }
-        .company-info p { margin: 5px 0 0 0; font-size: 12px; color: #555; white-space: pre-line; }
-        .devis-title { text-align: right; }
-        .devis-title h2 { margin: 0; color: var(--accent); font-size: 32px; }
+    /* En-tête */
+    .header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
+    #logo-view { max-width: 130px; max-height: 100px; object-fit: contain; }
+    .company-info h1 { margin: 0; color: var(--primary); font-size: 26px; }
+    .company-info p { margin: 5px 0 0 0; font-size: 12px; color: #555; white-space: pre-line; }
+    .devis-title { text-align: right; }
+    .devis-title h2 { margin: 0; color: var(--accent); font-size: 32px; }
 
-        /* Tableau (Correction alignement et coupures) */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
-        th { background: var(--primary); color: white; padding: 12px; text-align: left; font-size: 13px; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; word-wrap: break-word; vertical-align: top; }
-        
-        /* Empêche une ligne de se couper entre deux pages */
-        tr { page-break-inside: avoid; }
+    /* Tableau : Correction largeur et colonnes */
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
+    th { background: var(--primary); color: white; padding: 12px; text-align: left; font-size: 13px; }
+    
+    /* Largeurs de colonnes fixes pour éviter le décalage sur plusieurs pages */
+    th:nth-child(1) { width: 60%; } /* Description */
+    th:nth-child(2) { width: 10%; } /* Qté */
+    th:nth-child(3) { width: 30%; } /* Total */
 
-        /* Section Totaux [cite: 29] */
-        .totals-container { display: flex; flex-direction: column; align-items: flex-end; margin-top: 40px; }
-        .total-box { min-width: 350px; }
-        .total-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 15px; }
-        .net-a-payer {
-            background: var(--accent); color: white; padding: 18px; border-radius: 8px;
-            margin-top: 15px; display: flex; justify-content: space-between; font-weight: bold; font-size: 1.4rem;
-        }
-        
-/* Ajoutez ceci dans votre CSS pour aider au rendu PDF */
-@media print {
-    .page-container { padding: 0; }
-    .page { box-shadow: none; margin: 0; }
-}
+    td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; word-wrap: break-word; vertical-align: top; }
+    
+    /* GESTION MULTI-PAGES : Empêche les coupures sales */
+    tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+    thead { display: table-header-group; } /* Répète l'entête sur chaque page si nécessaire */
 
-        .footer-devis { margin-top: 60px; font-size: 11px; color: #999; text-align: center; border-top: 1px dashed #ccc; padding-top: 20px; }
-    </style>
+    /* Section Totaux */
+    .totals-container { display: flex; flex-direction: column; align-items: flex-end; margin-top: 40px; page-break-inside: avoid; }
+    .total-box { min-width: 350px; }
+    .total-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 15px; }
+    .net-a-payer {
+        background: var(--accent); color: white; padding: 18px; border-radius: 8px;
+        margin-top: 15px; display: flex; justify-content: space-between; font-weight: bold; font-size: 1.4rem;
+    }
+    
+    @media print {
+        body { background: none; }
+        .page-container { padding: 0; }
+        .page { box-shadow: none; margin: 0; width: 210mm; }
+        .toolbar { display: none; }
+    }
+
+    .footer-devis { margin-top: 60px; font-size: 11px; color: #999; text-align: center; border-top: 1px dashed #ccc; padding-top: 20px; }
+</style>
+
 </head>
 <body>
 
@@ -170,31 +181,33 @@
         window.addEventListener('kkiapay_resolved', () => { genererPDF(); });
 
         function genererPDF() {
-    const element = document.getElementById('capture-area');
+    const element = document.getElementById('capture-area'); // Assurez-vous que c'est bien la div .page
     const clientName = localStorage.getItem("client") || "Client";
 
-    // Options optimisées
-    const options = {
-        margin: 0, // On met à 0 car votre CSS .page a déjà 20mm de padding
+    const opt = {
+        margin: 0, // Marge à 0 car votre CSS gère déjà le padding de 20mm
         filename: 'Devis_SIMEL_' + clientName + '.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
             scale: 2, 
-            useCORS: true,
-            logging: false,
+            useCORS: true, 
             letterRendering: true,
-            windowWidth: 794 // Force le rendu sur une largeur A4 standard (96 DPI)
+            scrollY: 0,
+            windowWidth: 794 // Largeur précise A4 en pixels
         },
-        jsPDF: { 
-            unit: 'mm', 
-            format: 'a4', 
-            orientation: 'portrait',
-            precision: 12
-        }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // Gère intelligemment les sauts de page
     };
 
-    html2pdf().set(options).from(element).save();
+    // On retire l'ombre temporairement pour une capture propre
+    element.style.boxShadow = "none";
+    
+    html2pdf().set(opt).from(element).save().then(() => {
+        // On remet l'ombre après la génération
+        element.style.boxShadow = "0 0 20px rgba(0,0,0,0.1)";
+    });
 }
+
 
 
         function genererExcel() {
@@ -248,6 +261,7 @@
     </script>
 </body>
 </html>
+
 
 
 
