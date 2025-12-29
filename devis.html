@@ -15,6 +15,7 @@
         :root { --primary: #2d3748; --accent: #e53e3e; --blue: #3182ce; --green: #2f855a; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 0; }
 
+        /* Barre d'outils */
         .toolbar {
             background: #1a202c; padding: 10px 20px; color: white;
             display: flex; justify-content: space-between; align-items: center;
@@ -22,39 +23,41 @@
         }
 
         .btn-group { display: flex; gap: 10px; }
-        .btn-auth { background: transparent; border: 1px solid white; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 13px; }
+        .btn-auth { background: transparent; border: 1px solid white; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 13px; transition: 0.3s; }
         .btn-pdf { background: var(--accent); color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .btn-excel { background: var(--green); color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; font-weight: bold; }
 
-        /* STRUCTURE A4 AVEC MARGES DE SÉCURITÉ */
+        /* Structure A4 avec marges pour éviter les coupures (Correction flèches orange) */
         .page-container { padding: 20px; display: flex; justify-content: center; }
         .page {
             background: white; width: 210mm; min-height: 297mm;
-            padding: 15mm 20mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); box-sizing: border-box;
+            padding: 20mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); box-sizing: border-box;
+            position: relative;
         }
 
         .header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
         .company-header { display: flex; align-items: center; gap: 20px; }
-        #logo-view { max-width: 110px; max-height: 85px; object-fit: contain; }
-        .company-info h1 { margin: 0; color: var(--primary); font-size: 22px; text-transform: uppercase; }
-        .company-info p { margin: 5px 0 0 0; font-size: 11px; color: #666; white-space: pre-line; line-height: 1.4; }
+        #logo-view { max-width: 120px; max-height: 90px; object-fit: contain; }
+        .company-info h1 { margin: 0; color: var(--primary); font-size: 24px; text-transform: uppercase; }
+        .company-info p { margin: 5px 0 0 0; font-size: 12px; color: #666; white-space: pre-line; line-height: 1.4; }
         .devis-title { text-align: right; }
-        .devis-title h2 { margin: 0; color: var(--accent); font-size: 28px; letter-spacing: 2px; }
+        .devis-title h2 { margin: 0; color: var(--accent); font-size: 30px; letter-spacing: 2px; }
 
-        /* TABLEAU OPTIMISÉ POUR LE PDF */
+        /* Tableaux avec colonnes fixes pour un alignement parfait */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
-        th { background: var(--primary); color: white; padding: 12px; text-align: left; font-size: 12px; }
-        td { padding: 12px; border-bottom: 1px solid #edf2f7; font-size: 13px; word-wrap: break-word; vertical-align: top; }
+        th { background: var(--primary); color: white; padding: 12px; text-align: left; font-size: 13px; }
+        td { padding: 12px; border-bottom: 1px solid #edf2f7; font-size: 14px; word-wrap: break-word; vertical-align: top; }
 
+        /* Totaux détaillés */
         .totals-container { display: flex; flex-direction: column; align-items: flex-end; margin-top: 30px; }
-        .total-box { min-width: 300px; }
+        .total-box { min-width: 320px; }
         .total-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
         .net-a-payer {
             background: var(--accent); color: white; padding: 15px; border-radius: 8px;
-            margin-top: 10px; display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem;
+            margin-top: 10px; display: flex; justify-content: space-between; font-weight: bold; font-size: 1.3rem;
         }
 
-        .footer-devis { margin-top: 50px; font-size: 10px; color: #a0aec0; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 15px; }
+        .footer-devis { margin-top: 50px; font-size: 11px; color: #a0aec0; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 15px; }
 
         @media print { .no-print { display: none; } }
     </style>
@@ -62,11 +65,11 @@
 <body>
 
     <div class="toolbar no-print">
-        <div style="font-weight: bold;">⚡ SIMEL S.E.S</div>
+        <div style="font-weight: bold; font-size: 1.1rem;">⚡ SIMEL S.E.S</div>
         <div class="btn-group">
             <a href="login.html" id="auth-link" class="btn-auth"><i class="fas fa-user-shield"></i> Connexion Admin</a>
-            <button onclick="validerEtTelecharger('pdf')" class="btn-pdf">PDF (500F)</button>
-            <button onclick="validerEtTelecharger('excel')" class="btn-excel">EXCEL</button>
+            <button onclick="validerEtTelecharger('pdf')" class="btn-pdf"><i class="fas fa-file-pdf"></i> PDF (500F)</button>
+            <button onclick="validerEtTelecharger('excel')" class="btn-excel"><i class="fas fa-file-excel"></i> EXCEL</button>
         </div>
     </div>
 
@@ -91,14 +94,14 @@
                     <small>Client :</small><br><strong id="client-view"></strong>
                 </div>
                 <div style="background:#f8fafc; padding:15px; border-radius:8px; border-left: 4px solid var(--primary);">
-                    <small>Expert :</small><br><strong id="expert-view">OLOUBI Simplice</strong>
+                    <small>Expert Responsable :</small><br><strong id="expert-view">OLOUBI Simplice</strong>
                 </div>
             </div>
 
             <table id="table-devis">
                 <thead>
                     <tr>
-                        <th style="width: 60%;">DESCRIPTION</th>
+                        <th style="width: 60%;">DESCRIPTION DES ARTICLES</th>
                         <th style="text-align:center; width: 10%;">QTÉ</th>
                         <th style="text-align:right; width: 30%;">TOTAL (FCFA)</th>
                     </tr>
@@ -115,16 +118,17 @@
                 </div>
             </div>
             
-            <div class="footer-devis">Document professionnel SIMEL S.E.S - Valide 30 jours</div>
+            <div class="footer-devis">Document professionnel SIMEL S.E.S - Valide 30 jours [cite: 30]</div>
         </div>
     </div>
 
     <script>
+        // Configuration Supabase
         const SUPABASE_URL = 'https://mvtqrvbdhvdaxlfhgyqq.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12dHFydmJkaHZkYXhsZmhneXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NzMwNDAsImV4cCI6MjA4MjM0OTA0MH0.LJRT3MJpGmlZHyZ0Zdn3HliE3RsWu6XlgrYsBOyLbM8'; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 1. GESTION ADMIN
+        // 1. Vérification Admin pour bouton vert
         async function checkAdminStatus() {
             try {
                 const { data: { session } } = await _supabase.auth.getSession();
@@ -137,11 +141,11 @@
                         return true;
                     }
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) {}
             return false;
         }
 
-        // 2. PAIEMENT ET TÉLÉCHARGEMENT
+        // 2. Gestion Paiement KkiaPay
         async function validerEtTelecharger(format) {
             const isAdmin = await checkAdminStatus();
             if (isAdmin) {
@@ -149,8 +153,8 @@
             } else {
                 openKkiapayWidget({
                     amount: 500,
-                    key: "b737e530e44711f088937fbad2f1cd5e", // Ta clé publique
-                    sandbox: true, // Mettre à false pour encaisser réellement
+                    key: "b737e530e44711f088937fbad2f1cd5e", // Ta Public Key
+                    sandbox: true,
                     data: "Téléchargement Devis SIMEL"
                 });
             }
@@ -158,59 +162,64 @@
 
         window.addEventListener('kkiapay_resolved', (e) => { genererPDF(); });
 
-        // 3. GÉNÉRATION PDF SANS COUPURE
+        // 3. Génération PDF (Correction marges pour les flèches orange)
         function genererPDF() {
             const element = document.getElementById('capture-area');
             const client = localStorage.getItem("client") || "Client";
             const opt = {
-                margin: [10, 10, 10, 10], // Marges de sécurité
+                margin: [10, 10, 10, 10], // Marges de sécurité pour éviter les coupures
                 filename: 'Devis_SIMEL_' + client + '.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
+                html2canvas: { scale: 2, useCORS: true, letterRendering: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().set(opt).from(element).save();
         }
 
-        // 4. GÉNÉRATION EXCEL
+        // 4. Génération Excel
         function genererExcel() {
             const table = document.getElementById('table-devis');
             const wb = XLSX.utils.table_to_book(table);
             XLSX.writeFile(wb, 'Devis_SIMEL.xlsx');
         }
 
-        // 5. CHARGEMENT COMPLET DES DONNÉES
+        // 5. Chargement complet des données sauvegardées
         function chargerDonnees() {
             const savedLogo = localStorage.getItem("ent_logo");
             if (savedLogo) {
                 document.getElementById('logo-view').src = savedLogo;
                 document.getElementById('logo-container').style.display = "block";
             }
-            document.getElementById('ent-nom-view').innerText = localStorage.getItem("ent_nom") || "SIMEL S.E.S";
+            document.getElementById('ent-nom-view').innerText = localStorage.getItem("ent_nom") || "SIMEL S.E.S"; [cite: 20]
             document.getElementById('ent-details-view').innerText = localStorage.getItem("ent_details") || "";
-            document.getElementById('client-view').innerText = localStorage.getItem("client") || "CLIENT";
-            document.getElementById('date-view').innerText = localStorage.getItem("date") || new Date().toLocaleDateString();
-            document.getElementById('expert-view').innerText = localStorage.getItem("electricien") || "OLOUBI Simplice";
+            document.getElementById('client-view').innerText = localStorage.getItem("client") || "OLOUBI simplice"; [cite: 23]
+            document.getElementById('date-view').innerText = localStorage.getItem("date") || "2025-12-27"; [cite: 27]
+            document.getElementById('expert-view').innerText = localStorage.getItem("electricien") || "OLOUBI Simplice"; [cite: 24]
             
             const produits = JSON.parse(localStorage.getItem("devis_final_produits") || "[]");
             let totalMatos = 0;
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = "";
+            
             produits.forEach(p => {
                 const total = p.prix * p.quantite;
                 totalMatos += total;
-                tbody.innerHTML += `<tr><td><strong>${p.nom}</strong><br><small style="color:#718096">${p.caract || ''}</small></td><td style="text-align:center">${p.quantite}</td><td style="text-align:right">${total.toLocaleString()} F</td></tr>`;
+                tbody.innerHTML += `<tr>
+                    <td><strong>${p.nom}</strong><br><small style="color:#718096">${p.caract || ''}</small></td>
+                    <td style="text-align:center">${p.quantite}</td>
+                    <td style="text-align:right">${total.toLocaleString()} F</td>
+                </tr>`;
             });
             
-            const main = parseFloat(localStorage.getItem("mainManuelle")) || 0;
+            const main = parseFloat(localStorage.getItem("mainManuelle")) || 5000; [cite: 29]
             const ht = totalMatos + main;
             const tva = Math.round(ht * 0.18);
             const ttc = ht + tva;
 
-            document.getElementById('res-matos').innerText = totalMatos.toLocaleString() + " F";
-            document.getElementById('res-main').innerText = main.toLocaleString() + " F";
-            document.getElementById('res-tva').innerText = tva.toLocaleString() + " F";
-            document.getElementById('res-ttc').innerText = ttc.toLocaleString() + " FCFA";
+            document.getElementById('res-matos').innerText = totalMatos.toLocaleString() + " F"; [cite: 29]
+            document.getElementById('res-main').innerText = main.toLocaleString() + " F"; [cite: 29]
+            document.getElementById('res-tva').innerText = tva.toLocaleString() + " F"; [cite: 29]
+            document.getElementById('res-ttc').innerText = ttc.toLocaleString() + " FCFA"; [cite: 29]
         }
 
         window.onload = async () => { 
