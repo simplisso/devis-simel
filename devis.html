@@ -192,10 +192,74 @@
         .toolbar { display: none !important; }
         .page-container { padding: 0; background: white; }
         .page { box-shadow: none; margin: 0; padding: 15mm; }
-    }
-</style>
+    <style>
+        :root { --primary: #2d3748; --accent: #e53e3e; --blue: #3182ce; --green: #2f855a; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 0; }
 
+        .toolbar {
+            background: #1a202c; padding: 12px 25px; color: white;
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
 
+        .btn-group { display: flex; gap: 12px; }
+        .btn-auth { background: transparent; border: 1px solid white; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 13px; }
+        .btn-pdf { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-excel { background: var(--green); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+
+        /* Mise en page A4 Structurelle */
+        .page-container { padding: 30px; display: flex; justify-content: center; background: #f4f7f6; }
+        .page {
+            background: white; width: 210mm; min-height: 297mm;
+            padding: 20mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); box-sizing: border-box;
+            position: relative; overflow: hidden;
+        }
+
+        /* En-tête (Verrouillé pour éviter les décalages) */
+        .header { 
+            display: flex; justify-content: space-between; align-items: flex-start; 
+            border-bottom: 3px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; 
+            width: 100%;
+        }
+        #logo-view { max-width: 130px; max-height: 100px; object-fit: contain; }
+        .company-info { flex: 1; padding-left: 20px; max-width: 60%; }
+        .company-info h1 { margin: 0; color: var(--primary); font-size: 26px; line-height: 1.2; }
+        .company-info p { margin: 5px 0 0 0; font-size: 12px; color: #555; white-space: pre-line; }
+        
+        .devis-title { text-align: right; min-width: 150px; }
+        .devis-title h2 { margin: 0; color: var(--accent); font-size: 32px; font-weight: 800; }
+
+        /* Tableau (Correction critique pour le multi-page et noms longs) */
+        table { width: 100% !important; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
+        th { background: var(--primary); color: white; padding: 12px; text-align: left; font-size: 13px; text-transform: uppercase; }
+        
+        /* Fixation des largeurs de colonnes */
+        th:nth-child(1) { width: 60%; } 
+        th:nth-child(2) { width: 10%; } 
+        th:nth-child(3) { width: 30%; } 
+
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; word-wrap: break-word; vertical-align: top; line-height: 1.4; }
+        
+        /* Gestion des sauts de page */
+        tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+
+        /* Section Totaux */
+        .totals-container { display: flex; flex-direction: column; align-items: flex-end; margin-top: 40px; page-break-inside: avoid; }
+        .total-box { min-width: 350px; }
+        .total-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 15px; }
+        .net-a-payer {
+            background: var(--accent); color: white; padding: 18px; border-radius: 8px;
+            margin-top: 15px; display: flex; justify-content: space-between; font-weight: bold; font-size: 1.4rem;
+        }
+        
+        .footer-devis { margin-top: 60px; font-size: 11px; color: #999; text-align: center; border-top: 1px dashed #ccc; padding-top: 20px; }
+
+        @media print {
+            .toolbar { display: none !important; }
+            .page-container { padding: 0; }
+            .page { box-shadow: none; margin: 0; width: 210mm; }
+        }
+    </style>
 </head>
 <body>
 
@@ -203,7 +267,7 @@
         <div style="font-weight: bold; font-size: 1.2rem;">⚡ SYSTEME SIMEL S.E.S</div>
         <div class="btn-group">
             <a href="login.html" id="auth-link" class="btn-auth"><i class="fas fa-user-shield"></i> Accès Admin</a>
-            <button onclick="gererTelechargement('pdf')" class="btn-pdf"><i class="fas fa-file-pdf"></i> TÉLÉCHARGER PDF</button>
+            <button onclick="genererPDF()" class="btn-pdf"><i class="fas fa-file-pdf"></i> TÉLÉCHARGER PDF</button>
             <button onclick="gererTelechargement('excel')" class="btn-excel"><i class="fas fa-file-excel"></i> EXCEL</button>
         </div>
     </div>
@@ -211,7 +275,7 @@
     <div class="page-container">
         <div class="page" id="capture-area">
             <div class="header">
-                <div style="display: flex; align-items: center; gap: 20px;">
+                <div style="display: flex; align-items: center; gap: 20px; flex: 1;">
                     <div id="logo-container" style="display: none;"><img id="logo-view" src=""></div>
                     <div class="company-info">
                         <h1 id="ent-nom-view">SIMEL S.E.S</h1>
@@ -238,9 +302,9 @@
             <table id="table-devis">
                 <thead>
                     <tr>
-                        <th style="width: 60%;">DESCRIPTION DES PRESTATIONS / ARTICLES</th>
-                        <th style="text-align:center; width: 10%;">QTÉ</th>
-                        <th style="text-align:right; width: 30%;">TOTAL (FCFA)</th>
+                        <th>DESCRIPTION DES PRESTATIONS / ARTICLES</th>
+                        <th style="text-align:center;">QTÉ</th>
+                        <th style="text-align:right;">TOTAL (FCFA)</th>
                     </tr>
                 </thead>
                 <tbody id="table-body"></tbody>
@@ -380,6 +444,7 @@
     </script>
 </body>
 </html>
+
 
 
 
