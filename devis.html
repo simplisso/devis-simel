@@ -57,6 +57,12 @@
             background: var(--accent); color: white; padding: 18px; border-radius: 8px;
             margin-top: 15px; display: flex; justify-content: space-between; font-weight: bold; font-size: 1.4rem;
         }
+        
+/* Ajoutez ceci dans votre CSS pour aider au rendu PDF */
+@media print {
+    .page-container { padding: 0; }
+    .page { box-shadow: none; margin: 0; }
+}
 
         .footer-devis { margin-top: 60px; font-size: 11px; color: #999; text-align: center; border-top: 1px dashed #ccc; padding-top: 20px; }
     </style>
@@ -170,8 +176,10 @@
                 margin: [10, 10, 10, 10],
                 filename: 'Devis_SIMEL_' + clientName + '.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+               html2canvas: {scale: 2, useCORS: true, 
+    width: 793, // Force la largeur correspondant à 210mm en pixels (96 DPI)
+    windowWidth: 793 
+},  jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             }).from(element).save();
         }
 
@@ -226,3 +234,4 @@
     </script>
 </body>
 </html>
+
