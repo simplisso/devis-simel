@@ -170,18 +170,32 @@
         window.addEventListener('kkiapay_resolved', () => { genererPDF(); });
 
         function genererPDF() {
-            const element = document.getElementById('capture-area');
-            const clientName = localStorage.getItem("client") || "Client";
-            html2pdf().set({
-                margin: [10, 10, 10, 10],
-                filename: 'Devis_SIMEL_' + clientName + '.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-               html2canvas: {scale: 2, useCORS: true, 
-    width: 793, // Force la largeur correspondant à 210mm en pixels (96 DPI)
-    windowWidth: 793 
-},  jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).from(element).save();
+    const element = document.getElementById('capture-area');
+    const clientName = localStorage.getItem("client") || "Client";
+
+    // Options optimisées
+    const options = {
+        margin: 0, // On met à 0 car votre CSS .page a déjà 20mm de padding
+        filename: 'Devis_SIMEL_' + clientName + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true,
+            logging: false,
+            letterRendering: true,
+            windowWidth: 794 // Force le rendu sur une largeur A4 standard (96 DPI)
+        },
+        jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'portrait',
+            precision: 12
         }
+    };
+
+    html2pdf().set(options).from(element).save();
+}
+
 
         function genererExcel() {
             const table = document.getElementById('table-devis');
@@ -234,5 +248,6 @@
     </script>
 </body>
 </html>
+
 
 
