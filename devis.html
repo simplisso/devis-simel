@@ -15,6 +15,7 @@
         :root { --primary: #2d3748; --accent: #e53e3e; --blue: #3182ce; --green: #2f855a; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 0; }
 
+        /* Barre d'outils */
         .toolbar {
             background: #1a202c; padding: 10px 20px; color: white;
             display: flex; justify-content: space-between; align-items: center;
@@ -27,40 +28,36 @@
         .btn-pdf { background: var(--accent); color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .btn-excel { background: var(--green); color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; font-weight: bold; }
 
-        /* Correction du cadrage PDF */
-        .page-container { padding: 20px; display: flex; justify-content: center; background: #f4f7f6; }
+        /* Structure A4 avec marges de sécurité pour éviter les coupures */
+        .page-container { padding: 20px; display: flex; justify-content: center; }
         .page {
             background: white; width: 210mm; min-height: 297mm;
-            padding: 15mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); box-sizing: border-box;
-            position: relative; overflow: hidden;
+            padding: 15mm 20mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); box-sizing: border-box;
+            position: relative;
         }
 
         .header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
         .company-header { display: flex; align-items: center; gap: 20px; }
-        #logo-view { max-width: 100px; max-height: 80px; object-fit: contain; }
-        
+        #logo-view { max-width: 110px; max-height: 85px; object-fit: contain; }
         .company-info h1 { margin: 0; color: var(--primary); font-size: 22px; text-transform: uppercase; }
-        .company-info p { margin: 5px 0 0 0; font-size: 11px; color: #666; white-space: pre-line; }
-
+        .company-info p { margin: 5px 0 0 0; font-size: 11px; color: #666; white-space: pre-line; line-height: 1.4; }
         .devis-title { text-align: right; }
-        .devis-title h2 { margin: 0; color: var(--accent); font-size: 28px; }
+        .devis-title h2 { margin: 0; color: var(--accent); font-size: 28px; letter-spacing: 2px; }
 
-        /* Table ajustée pour ne plus être coupée */
+        /* Tableaux ajustés pour ne plus déborder */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
-        th { background: var(--primary); color: white; padding: 10px; text-align: left; font-size: 12px; }
-        td { padding: 10px; border-bottom: 1px solid #edf2f7; font-size: 13px; word-wrap: break-word; vertical-align: top; }
+        th { background: var(--primary); color: white; padding: 12px; text-align: left; font-size: 12px; }
+        td { padding: 12px; border-bottom: 1px solid #edf2f7; font-size: 13px; word-wrap: break-word; vertical-align: top; }
 
         .totals-container { display: flex; flex-direction: column; align-items: flex-end; margin-top: 30px; }
-        .total-box { min-width: 280px; }
-        .total-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 14px; }
-        
+        .total-box { min-width: 300px; }
+        .total-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
         .net-a-payer {
-            background: var(--accent); color: white; padding: 12px; border-radius: 6px;
-            margin-top: 10px; display: flex; justify-content: space-between;
-            font-weight: bold; font-size: 1.2rem;
+            background: var(--accent); color: white; padding: 15px; border-radius: 8px;
+            margin-top: 10px; display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem;
         }
 
-        .footer-devis { margin-top: 40px; font-size: 10px; color: #a0aec0; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 10px; }
+        .footer-devis { margin-top: 50px; font-size: 10px; color: #a0aec0; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 15px; }
 
         @media print { .no-print { display: none; } }
     </style>
@@ -68,11 +65,11 @@
 <body>
 
     <div class="toolbar no-print">
-        <div style="font-weight: bold;">⚡ SIMEL S.E.S</div>
+        <div style="font-weight: bold; font-size: 1.1rem;">⚡ SIMEL S.E.S</div>
         <div class="btn-group">
             <a href="login.html" id="auth-link" class="btn-auth"><i class="fas fa-user-shield"></i> Connexion Admin</a>
-            <button onclick="gererTelechargement('pdf')" class="btn-pdf">PDF</button>
-            <button onclick="gererTelechargement('excel')" class="btn-excel">EXCEL</button>
+            <button onclick="validerEtTelecharger('pdf')" class="btn-pdf">PDF</button>
+            <button onclick="validerEtTelecharger('excel')" class="btn-excel">EXCEL</button>
         </div>
     </div>
 
@@ -92,11 +89,11 @@
                 </div>
             </div>
 
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
-                <div style="background:#f8fafc; padding:12px; border-radius:6px; border-left: 4px solid var(--blue);">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:30px;">
+                <div style="background:#f8fafc; padding:15px; border-radius:8px; border-left: 4px solid var(--blue);">
                     <small>Client :</small><br><strong id="client-view"></strong>
                 </div>
-                <div style="background:#f8fafc; padding:12px; border-radius:6px; border-left: 4px solid var(--primary);">
+                <div style="background:#f8fafc; padding:15px; border-radius:8px; border-left: 4px solid var(--primary);">
                     <small>Expert :</small><br><strong id="expert-view">SIMPLICE OLOUBI</strong>
                 </div>
             </div>
@@ -104,9 +101,9 @@
             <table id="table-devis">
                 <thead>
                     <tr>
-                        <th style="width: 65%;">DESCRIPTION DES ARTICLES</th>
+                        <th style="width: 60%;">DESCRIPTION</th>
                         <th style="text-align:center; width: 10%;">QTÉ</th>
-                        <th style="text-align:right; width: 25%;">TOTAL (FCFA)</th>
+                        <th style="text-align:right; width: 30%;">TOTAL (FCFA)</th>
                     </tr>
                 </thead>
                 <tbody id="table-body"></tbody>
@@ -121,7 +118,7 @@
                 </div>
             </div>
             
-            <div class="footer-devis">Document généré par SIMEL S.E.S - Valide 30 jours</div>
+            <div class="footer-devis">Document professionnel SIMEL S.E.S - Valide 30 jours</div>
         </div>
     </div>
 
@@ -130,50 +127,52 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12dHFydmJkaHZkYXhsZmhneXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NzMwNDAsImV4cCI6MjA4MjM0OTA0MH0.LJRT3MJpGmlZHyZ0Zdn3HliE3RsWu6XlgrYsBOyLbM8'; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Vérification Admin
+        // 1. GESTION DU BOUTON ADMIN VERT
         async function checkAdminStatus() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            if (session) {
-                const { data: profile } = await _supabase.from('profiles').select('is_admin').eq('id', session.user.id).maybeSingle();
-                if (profile && profile.is_admin) {
-                    const btn = document.getElementById('auth-link');
-                    btn.innerHTML = "<i class='fas fa-check-circle'></i> ADMIN CONNECTÉ";
-                    btn.style.color = "#48bb78"; btn.style.borderColor = "#48bb78";
-                    return true;
+            try {
+                const { data: { session } } = await _supabase.auth.getSession();
+                if (session) {
+                    const { data: profile } = await _supabase.from('profiles').select('is_admin').eq('id', session.user.id).maybeSingle();
+                    if (profile && profile.is_admin) {
+                        const btn = document.getElementById('auth-link');
+                        btn.innerHTML = "<i class='fas fa-check-circle'></i> ADMIN CONNECTÉ";
+                        btn.style.color = "#48bb78";
+                        btn.style.borderColor = "#48bb78";
+                        return true;
+                    }
                 }
-            }
+            } catch (e) { console.error(e); }
             return false;
         }
 
-        // Logique de téléchargement avec KkiaPay
-        async function gererTelechargement(format) {
+        // 2. ACTION TELECHARGER AVEC KKIA PAY
+        async function validerEtTelecharger(format) {
             const isAdmin = await checkAdminStatus();
             
             if (isAdmin) {
                 format === 'pdf' ? genererPDF() : genererExcel();
             } else {
-                // Lancement KkiaPay
                 openKkiapayWidget({
                     amount: 500,
-                    position: "right",
-                    callback: "/success", // Pas important ici car on gère l'event
-                    data: "Téléchargement Devis SIMEL",
-                    key: "b737e530e44711f088937fbad2f1cd5e"
+                    key: "b737e530e44711f088937fbad2f1cd5e", // Ta Public Api Key
+                    sandbox: true, // Mettre à false pour le mode réel
+                    data: "Téléchargement Devis SIMEL"
                 });
             }
         }
 
-        // Ecouteur pour Kkiapay (succès du paiement)
+        // Succès du paiement KkiaPay
         window.addEventListener('kkiapay_resolved', (e) => {
-            // Le paiement a réussi
-            genererPDF(); 
+            genererPDF();
         });
 
+        // 3. GENERATION DU PDF SANS COUPURE
         function genererPDF() {
             const element = document.getElementById('capture-area');
+            const client = localStorage.getItem("client") || "Client";
             const opt = {
-                margin: [10, 10, 10, 10], // Marges de sécurité pour éviter les coupures
-                filename: 'Devis_SIMEL.pdf',
+                margin: [10, 10, 10, 10], // Marges Haut, Gauche, Bas, Droite pour éviter les coupures
+                filename: 'Devis_SIMEL_' + client + '.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, letterRendering: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -181,12 +180,14 @@
             html2pdf().set(opt).from(element).save();
         }
 
+        // 4. GENERATION EXCEL
         function genererExcel() {
             const table = document.getElementById('table-devis');
             const wb = XLSX.utils.table_to_book(table);
             XLSX.writeFile(wb, 'Devis_SIMEL.xlsx');
         }
 
+        // 5. CHARGEMENT DES DONNEES
         function chargerDonnees() {
             const savedLogo = localStorage.getItem("ent_logo");
             if (savedLogo) {
@@ -197,6 +198,7 @@
             document.getElementById('ent-details-view').innerText = localStorage.getItem("ent_details") || "";
             document.getElementById('client-view').innerText = localStorage.getItem("client") || "CLIENT";
             document.getElementById('date-view').innerText = localStorage.getItem("date") || new Date().toLocaleDateString();
+            document.getElementById('expert-view').innerText = localStorage.getItem("electricien") || "SIMPLICE OLOUBI";
             
             const produits = JSON.parse(localStorage.getItem("devis_final_produits") || "[]");
             let totalMatos = 0;
@@ -205,7 +207,7 @@
             produits.forEach(p => {
                 const total = p.prix * p.quantite;
                 totalMatos += total;
-                tbody.innerHTML += `<tr><td><strong>${p.nom}</strong></td><td style="text-align:center">${p.quantite}</td><td style="text-align:right">${total.toLocaleString()} F</td></tr>`;
+                tbody.innerHTML += `<tr><td><strong>${p.nom}</strong><br><small style="color:#718096">${p.caract || ''}</small></td><td style="text-align:center">${p.quantite}</td><td style="text-align:right">${total.toLocaleString()} F</td></tr>`;
             });
             
             const main = parseFloat(localStorage.getItem("mainManuelle")) || 0;
