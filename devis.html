@@ -26,7 +26,7 @@
         padding: 0; 
     }
 
-    /* Barre d'outils (invisible à l'impression) */
+    /* Barre d'outils */
     .toolbar {
         background: #1a202c; 
         padding: 12px 25px; 
@@ -45,7 +45,7 @@
     .btn-pdf { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
     .btn-excel { background: var(--green); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
 
-    /* Mise en page A4 Structurelle */
+    /* Conteneur principal */
     .page-container { 
         padding: 30px; 
         display: flex; 
@@ -53,6 +53,7 @@
         background: #f4f7f6;
     }
 
+    /* La Page A4 - Correction décalage PC */
     .page {
         background: white; 
         width: 210mm; 
@@ -61,10 +62,11 @@
         box-shadow: 0 0 20px rgba(0,0,0,0.1); 
         box-sizing: border-box;
         position: relative;
-        overflow: hidden; /* Empêche tout dépassement parasite */
+        margin: 0 auto; /* Force le centrage sur PC */
+        overflow: hidden;
     }
 
-    /* En-tête (Verrouillé pour éviter les décalages PC) */
+    /* En-tête */
     .header { 
         display: flex; 
         justify-content: space-between; 
@@ -75,11 +77,7 @@
         width: 100%;
     }
 
-    #logo-view { 
-        max-width: 130px; 
-        max-height: 100px; 
-        object-fit: contain; 
-    }
+    #logo-view { max-width: 130px; max-height: 100px; object-fit: contain; }
 
     .company-info { 
         flex: 1; 
@@ -93,7 +91,7 @@
     .devis-title { text-align: right; min-width: 150px; }
     .devis-title h2 { margin: 0; color: var(--accent); font-size: 32px; font-weight: 800; }
 
-    /* Cartouches Client / Expert */
+    /* Grille Client / Expert */
     .info-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -110,7 +108,7 @@
     .info-card small { text-transform: uppercase; color: #666; font-size: 11px; display: block; margin-bottom: 5px; }
     .info-card strong { font-size: 18px; color: #2d3748; }
 
-    /* TABLEAU (Verrouillage strict des colonnes) */
+    /* TABLEAU - Verrouillage des largeurs */
     table { 
         width: 100% !important; 
         border-collapse: collapse; 
@@ -127,7 +125,7 @@
         text-transform: uppercase;
     }
 
-    /* Fixation impérative des colonnes pour éviter le décalage PC */
+    /* Fixation des colonnes */
     th:nth-child(1) { width: 60%; } 
     th:nth-child(2) { width: 10%; text-align: center; } 
     th:nth-child(3) { width: 30%; text-align: right; } 
@@ -141,11 +139,8 @@
         line-height: 1.4;
     }
 
-    /* Gestion des sauts de page pour les longs devis */
-    tr { 
-        page-break-inside: avoid !important; 
-        break-inside: avoid !important; 
-    }
+    /* Empêche les coupures de lignes entre les pages */
+    tr { page-break-inside: avoid !important; break-inside: avoid !important; }
 
     /* Section Totaux */
     .totals-container { 
@@ -187,7 +182,6 @@
         padding-top: 20px; 
     }
 
-    /* Correction Impression & PDF */
     @media print {
         body { background: white; }
         .toolbar { display: none !important; }
@@ -195,7 +189,6 @@
         .page { box-shadow: none; margin: 0; width: 210mm; padding: 15mm; }
     }
 </style>
-
 </head>
 <body>
 
@@ -387,6 +380,7 @@
     </script>
 </body>
 </html>
+
 
 
 
