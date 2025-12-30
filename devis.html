@@ -292,11 +292,24 @@
 
         window.addEventListener('kkiapay_resolved', () => { genererPDF(); });
 
-        function genererPDF() {
+       function genererPDF() {
+    // On cible l'élément à capturer
     const element = document.getElementById('capture-area');
+    
+    // Récupération du nom du client pour le nom du fichier
     const clientName = document.getElementById('client-view').innerText || "Client";
 
-    // On prépare les options pour figer la largeur
+    // --- ÉTAPE 1 : Verrouillage pour PC ---
+    // On sauvegarde le style original pour le remettre plus tard
+    const originalWidth = element.style.width;
+    const originalMargin = element.style.margin;
+
+    // On force la largeur A4 en pixels pour éviter que le navigateur PC ne décale le contenu
+    element.style.width = "794px"; 
+    element.style.margin = "0"; 
+    element.style.boxShadow = "none";
+
+    // --- ÉTAPE 2 : Configuration de html2pdf ---
     const opt = {
         margin: 0,
         filename: 'Devis_SIMEL_' + clientName + '.pdf',
@@ -306,9 +319,8 @@
             useCORS: true, 
             letterRendering: true,
             scrollY: 0,
-            // Ces deux lignes sont CRUCIALES pour le PC :
-            width: 794,      // Largeur A4 en pixels (96 DPI)
-            windowWidth: 794 // Force le navigateur virtuel à cette largeur
+            width: 794,      // Force la capture à 794px de large
+            windowWidth: 794 // Simule une fenêtre de 794px pour le calcul du CSS
         },
         jsPDF: { 
             unit: 'mm', 
@@ -318,16 +330,19 @@
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
-    // 1. On retire l'ombre pour le PDF
-    element.style.boxShadow = "none";
-    
-    // 2. On lance la génération
+    // --- ÉTAPE 3 : Lancement de la génération ---
     html2pdf().set(opt).from(element).save().then(() => {
-        // 3. On remet l'ombre pour l'affichage écran après l'export
+        // --- ÉTAPE 4 : Restauration de l'affichage écran ---
+        element.style.width = originalWidth;
+        element.style.margin = originalMargin;
+        element.style.boxShadow = "0 0 20px rgba(0,0,0,0.1)";
+    }).catch(err => {
+        console.error("Erreur lors de la génération PDF :", err);
+        // Remise en état même en cas d'erreur
+        element.style.width = originalWidth;
         element.style.boxShadow = "0 0 20px rgba(0,0,0,0.1)";
     });
 }
-
 
         function genererExcel() {
             const table = document.getElementById('table-devis');
@@ -380,6 +395,7 @@
     </script>
 </body>
 </html>
+
 
 
 
