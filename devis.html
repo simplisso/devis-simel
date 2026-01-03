@@ -277,20 +277,33 @@
         }
 
         async function gererTelechargement(format) {
-            const isAdmin = await checkAdminStatus();
-            if (isAdmin) {
-                format === 'pdf' ? genererPDF() : genererExcel();
-            } else {
-                openKkiapayWidget({
-                    amount: 500,
-                    key: "b737e530e44711f088937fbad2f1cd5e",
-                    sandbox: true,
-                    data: "Paiement Devis SIMEL"
-                });
-            }
-        }
+    const isAdmin = await checkAdminStatus();
 
-        window.addEventListener('kkiapay_resolved', () => { genererPDF(); });
+    if (isAdmin) {
+        format === 'pdf' ? genererPDF() : genererExcel();
+    } else {
+        // Configuration de FedaPay
+        FedaPay.init({
+            public_key: 'pk_live_JPQ8hLBe9RENF2ojZZ4bMO3J',
+            transaction: {
+                amount: 500,
+                description: 'Paiement Devis SIMEL'
+            },
+            onComplete: function(response) {
+                if (response.status === 'approved') {
+                    // Si le paiement est réussi, on génère le document
+                    // Note : Ici, on choisit le PDF par défaut ou selon le format
+                    format === 'pdf' ? genererPDF() : genererExcel();
+                } else {
+                    alert("Le paiement n'a pas pu être complété.");
+                }
+            }
+        }).open();
+    }
+}
+
+// Vous pouvez supprimer l'écouteur 'kkiapay_resolved' car 
+// la logique est maintenant gérée dans le 'onComplete' de FedaPay.
 
        function genererPDF() {
     // On cible l'élément à capturer
@@ -393,8 +406,11 @@
             chargerDonnees(); 
         };
     </script>
+    <script src="https://cdn.fedapay.com/checkout.js?v=1.1.7"></script>
+
 </body>
 </html>
+
 
 
 
