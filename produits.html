@@ -39,6 +39,13 @@
         }
         
         .qte-input { width: 60px !important; padding: 5px !important; text-align: center; margin-right: 10px; }
+
+        /* Style pour le bouton supprimer */
+        .btn-delete-last {
+            background: #e53e3e; color: white; border: none; 
+            padding: 8px 15px; border-radius: 20px; cursor: pointer;
+            font-size: 0.8rem; margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -94,16 +101,22 @@
         <div class="card-pro">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
                 <h1 style="margin:0;"><i class="fas fa-list"></i> Articles Disponibles</h1>
-                <input type="text" id="recherche" placeholder="🔍 Rechercher un article..." onkeyup="afficherCatalogue()" style="width: 300px;">
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="viderPanier()" class="btn-delete-last" style="background: #718096;"><i class="fas fa-trash-alt"></i> Vider le devis</button>
+                    <input type="text" id="recherche" placeholder="🔍 Rechercher un article..." onkeyup="afficherCatalogue()" style="width: 250px;">
+                </div>
             </div>
 
             <div id="liste-produits" class="grille-produits"></div>
         </div>
 
         <div class="panier-summary">
-            <div>
+            <div style="display: flex; align-items: center;">
                 <i class="fas fa-shopping-cart"></i> <span id="nb-articles">0 article</span> | 
                 <strong>Total HT: <span id="total-ht">0</span> FCFA</strong>
+                <button onclick="supprimerDernier()" class="btn-delete-last" title="Supprimer le dernier ajout">
+                    <i class="fas fa-undo"></i> Annuler dernier
+                </button>
             </div>
             <button onclick="validerVersDevis()" class="btn-simel" style="width: auto; background: white; color: var(--primary); border: none;">
                 Générer le document <i class="fas fa-file-invoice"></i>
@@ -173,7 +186,6 @@
             });
         }
 
-        // --- NOUVELLE FONCTION POUR LES PHASES ---
         function ajouterPhaseAuPanier() {
             const nomPhase = document.getElementById("phase-nom").value;
             if(!nomPhase) return alert("Veuillez saisir le nom de la phase.");
@@ -184,13 +196,12 @@
                 caract: "Séparateur de phase",
                 quantite: 0,
                 totalLigne: 0,
-                type: 'phase' // Identifié par le fichier devis.html
+                type: 'phase' 
             };
 
             panier.push(phaseDevis);
             document.getElementById("phase-nom").value = "";
             MAJ_UI_Panier();
-            alert("Phase ajoutée au devis !");
         }
 
         function ajouterAuPanier(id) {
@@ -207,6 +218,21 @@
 
             panier.push(articleDevis);
             MAJ_UI_Panier();
+        }
+
+        // --- NOUVELLES FONCTIONS DE GESTION ---
+        function supprimerDernier() {
+            if (panier.length > 0) {
+                panier.pop();
+                MAJ_UI_Panier();
+            }
+        }
+
+        function viderPanier() {
+            if (confirm("Voulez-vous vider tout le contenu du devis ?")) {
+                panier = [];
+                MAJ_UI_Panier();
+            }
         }
 
         function MAJ_UI_Panier() {
