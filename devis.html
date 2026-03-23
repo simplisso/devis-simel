@@ -53,7 +53,7 @@
         background: #f4f7f6;
     }
 
-    /* La Page A4 - Correction décalage PC */
+    /* La Page A4 */
     .page {
         background: white; 
         width: 210mm; 
@@ -108,7 +108,7 @@
     .info-card small { text-transform: uppercase; color: #666; font-size: 11px; display: block; margin-bottom: 5px; }
     .info-card strong { font-size: 18px; color: #2d3748; }
 
-    /* TABLEAU - Mis à jour pour 4 colonnes */
+    /* TABLEAU */
     table { 
         width: 100% !important; 
         border-collapse: collapse; 
@@ -125,11 +125,10 @@
         text-transform: uppercase;
     }
 
-    /* Ajustement des largeurs de colonnes */
-    th:nth-child(1) { width: 45%; } /* Description */
-    th:nth-child(2) { width: 15%; text-align: center; } /* P.U */
-    th:nth-child(3) { width: 10%; text-align: center; } /* QTÉ */
-    th:nth-child(4) { width: 30%; text-align: right; }  /* TOTAL */
+    th:nth-child(1) { width: 45%; } 
+    th:nth-child(2) { width: 15%; text-align: center; } 
+    th:nth-child(3) { width: 10%; text-align: center; } 
+    th:nth-child(4) { width: 30%; text-align: right; } 
 
     td { 
         padding: 12px; 
@@ -140,9 +139,19 @@
         line-height: 1.4;
     }
 
+    /* Style spécifique pour la ligne de PHASE */
+    .row-phase {
+        background-color: #edf2f7;
+        font-weight: bold;
+        color: var(--primary);
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+    }
+
     tr { page-break-inside: avoid !important; break-inside: avoid !important; }
 
-    /* Section Totaux */
+    /* Totaux */
     .totals-container { 
         display: flex; 
         flex-direction: column; 
@@ -243,7 +252,7 @@
                 <div class="total-box">
                     <div class="total-row"><span>Total Matériel</span><strong id="res-matos">0 F</strong></div>
                     <div class="total-row"><span>Main d'œuvre</span><strong id="res-main">0 F</strong></div>
-                    <div class="total-row"><span>TVA (2%)</span><strong id="res-tva">0 F</strong></div>
+                    <div class="total-row"><span>TVA (1%)</span><strong id="res-tva">0 F</strong></div>
                     <div class="net-a-payer">
                         <span>NET À PAYER :</span>
                         <span id="res-ttc">0 FCFA</span>
@@ -252,7 +261,7 @@
             </div>
             
             <div class="footer-devis">
-                Ce devis est valable 30 jours. SIMEL S.E.S vous remercie de votre confiance.
+                Les travaux de la présente offre incluent exclusivement la réalisation des saignées, la pose des conduits et le scellement des boîtiers. Le rebouchage définitif et la finition des enduits muraux. SIMEL S.E.S vous remercie de votre confiance.
             </div>
         </div>
     </div>
@@ -363,17 +372,26 @@
             tbody.innerHTML = "";
 
             produits.forEach(p => {
-                const pu = parseFloat(p.prix) || 0;
-                const qte = parseFloat(p.quantite) || 0;
-                const total = pu * qte;
-                totalMatos += total;
-                
-                tbody.innerHTML += `<tr>
-                    <td><strong>${p.nom}</strong><br><small style="color:#718096">${p.caract || ''}</small></td>
-                    <td style="text-align:center">${pu.toLocaleString()}</td>
-                    <td style="text-align:center">${qte}</td>
-                    <td style="text-align:right">${total.toLocaleString()} F</td>
-                </tr>`;
+                // Si le nom contient "PHASE" ou si c'est marqué comme phase
+                if (p.nom.toUpperCase().includes("PHASE") || p.type === 'phase') {
+                    tbody.innerHTML += `<tr class="row-phase">
+                        <td colspan="4" style="text-align:left; padding: 8px 12px;">
+                            <i class="fas fa-tools"></i> &nbsp; ${p.nom}
+                        </td>
+                    </tr>`;
+                } else {
+                    const pu = parseFloat(p.prix) || 0;
+                    const qte = parseFloat(p.quantite) || 0;
+                    const total = pu * qte;
+                    totalMatos += total;
+                    
+                    tbody.innerHTML += `<tr>
+                        <td><strong>${p.nom}</strong><br><small style="color:#718096">${p.caract || ''}</small></td>
+                        <td style="text-align:center">${pu.toLocaleString()}</td>
+                        <td style="text-align:center">${qte}</td>
+                        <td style="text-align:right">${total.toLocaleString()} F</td>
+                    </tr>`;
+                }
             });
             
             const main = parseFloat(localStorage.getItem("mainManuelle")) || 0;
